@@ -19,6 +19,12 @@ Data lives outside the repo at the paths configured in `config/config.yaml` (def
 ├── tasks.yaml          # all tasks
 ├── events.yaml         # calendar events
 ├── journal/            # one markdown file per day: YYYY-MM-DD.md
+├── profiles/           # personal context — read when adding tasks/events
+│   ├── individual.md   # the user's identity, work, schedule, preferences
+│   ├── family.md       # family members, their schools/workplaces, schedules
+│   ├── environment.md  # key locations and commute times between them
+│   ├── goals.md        # personal goals, what kind of work they need
+│   └── tasks.md        # task-type durations and energy/context requirements
 └── files/
     ├── documents/      # PDFs, spreadsheets, text files
     │   └── <subcategory>/
@@ -198,6 +204,222 @@ Search `data/index.yaml` under `files:` — match by `category`, `subcategory`, 
 
 ---
 
+## Profiles — `~/Documents/anvaya/profiles/`
+
+Five files capture standing personal context. **Read them whenever you are adding or enriching a task or event, or when the user has free time and wants suggestions.**
+
+### `individual.md`
+The user's identity, employer, work location, typical daily schedule, and personal preferences relevant to planning.
+
+### `family.md`
+One section per family member. Each section records:
+- Relationship and name
+- School or employer and its location
+- Typical schedule (school hours, work hours, pickup times, etc.)
+- Any recurring commitments worth noting
+
+### `environment.md`
+Two tables:
+
+**Key Locations** — name + address/description for Home, Work, schools, gyms, shops, etc.
+
+**Commute Times** — from/to pairs with transport mode, typical duration, and any notes (e.g. peak-hour variance).
+
+### `goals.md`
+Personal goals grouped by life area. Each goal records:
+- What the goal is and why it matters
+- Current status / progress
+- What **kind of work** it needs: focused, creative, physical, low-energy, social, etc.
+- Typical activities that move the needle
+- Time commitment (daily/weekly target)
+- Priority relative to other goals
+
+### `tasks.md`
+A reference table of **task types and their typical durations**, energy requirements, and context needs. This is *not* the active task list (`tasks.yaml`) — it is a knowledge base of "how long things usually take" and "what state do I need to be in to do them well."
+
+Each entry records:
+- Task type name
+- Approximate duration
+- Energy / mood fit: focused, relaxed, tired-ok, energetic, creative
+- Location / context: home, office, anywhere, outdoors, gym
+- Related goal (if any)
+- Notes
+
+### Profile file format
+
+`individual.md`:
+```markdown
+# Individual Profile
+
+## Identity
+- Name:
+- Role:
+- Employer:
+
+## Locations
+- Home: [neighbourhood or address]
+- Work: [address or "remote"]
+
+## Schedule
+- Work hours:
+- [other recurring patterns]
+
+## Preferences
+- [scheduling or planning preferences]
+```
+
+`family.md`:
+```markdown
+# Family
+
+## [Member Name]
+- Relationship: [spouse | child | parent | …]
+- School / Work: [institution and location]
+- Schedule: [e.g. school 8 am – 3 pm, pickup at school gate]
+- Notes: [allergies, medical, anything planning-relevant]
+```
+
+`environment.md`:
+```markdown
+# Environment
+
+## Key Locations
+| Name | Address / Description |
+|------|-----------------------|
+| Home | …                     |
+| Work | …                     |
+
+## Commute Times
+| From | To   | Mode  | Duration | Notes          |
+|------|------|-------|----------|----------------|
+| Home | Work | Drive | 45 min   | +15 min peak   |
+```
+
+`goals.md`:
+```markdown
+# Goals
+
+## [Goal Name]
+- Area: [health | career | learning | creative | financial | relationships | …]
+- Why: [one-line motivation]
+- Status: [not started | active | paused | achieved]
+- Priority: [high | medium | low]
+- Work type: [focused | creative | physical | low-energy | social]
+- Activities:
+  - [specific activity that advances this goal]
+  - [another activity]
+- Target: [e.g. 30 min/day, 3x/week]
+- Progress notes: [optional free text]
+```
+
+`tasks.md`:
+```markdown
+# Task Durations & Requirements
+
+| Task | Duration | Energy | Location | Related Goal | Notes |
+|------|----------|--------|----------|--------------|-------|
+| Read a chapter | 25 min | focused | anywhere | Read 20 books | use Pomodoro |
+| Morning run | 30 min | energetic | outdoors | Fitness | stretch after |
+| Sketch practice | 20 min | creative-relaxed | home | Learn drawing | use iPad |
+| Review flashcards | 15 min | low-energy | anywhere | Learn Spanish | Anki deck |
+| Meal prep | 45 min | relaxed | home (kitchen) | Eat healthier | batch cook Sun |
+```
+
+<!--
+The Duration column is an estimate — use it for scheduling suggestions.
+The Energy column tells you which tasks fit the user's current state.
+-->
+```
+
+---
+
+## Free Time Matching — Goal-aware Suggestions
+
+**When the user says they have free time** (e.g. "I have 30 minutes", "what should I do now?", "I'm free until 3 pm"), run this matching algorithm.
+
+### Inputs to capture
+From the user's message, extract:
+1. **Available time** — how many minutes (explicit or computed from "free until X")
+2. **Current state** — energy/mood: focused, relaxed, tired, energetic, creative (ask if unclear)
+3. **Current location** — home, office, outdoors, commuting (infer from time of day + schedule if not stated)
+
+### Matching algorithm
+
+```
+1. Read profiles/tasks.md
+   → Filter to tasks where Duration ≤ available time
+   → Filter to tasks where Energy matches current state
+   → Filter to tasks where Location is compatible
+
+2. Read profiles/goals.md
+   → Identify active goals with priority high or medium
+   → Rank remaining tasks by: related goal priority (high > medium > low > none)
+
+3. Check tasks.yaml
+   → Any pending tasks with due dates soon that also fit the time/energy window?
+   → These get top priority — real deadlines beat goal work
+
+4. Suggest 2–3 options, ordered by priority:
+   - First: any urgent pending task that fits
+   - Then: goal-aligned tasks from tasks.md, highest priority goal first
+   - Finally: any remaining task that fits the window
+```
+
+### Response format
+```
+You have ~30 min, feeling relaxed, at home. Here's what fits:
+
+1. **Review Spanish flashcards** (15 min, low-energy) — advances "Learn Spanish" [high priority goal]
+2. **Sketch practice** (20 min, creative-relaxed) — advances "Learn drawing" [medium priority goal]
+3. **Read a chapter** (25 min, focused) — advances "Read 20 books" [medium priority goal]
+```
+
+If no tasks match, say so and suggest updating `tasks.md` with activities for this state.
+
+---
+
+## Context Enrichment — Automatic Profile Cross-referencing
+
+**Every time you add or update a task or event, run this enrichment pass before writing.**
+
+### Step 1 — Identify entities in the request
+Scan the user's input for:
+- **People**: names or relationships (child, spouse, teacher…)
+- **Places**: school, office, gym, hospital, any named location
+- **Activities with known prep**: PTM / parent–teacher meeting, doctor appointment, flight, sports practice…
+
+### Step 2 — Load relevant profiles
+- Any person mentioned → open `family.md`, find their section
+- Any place mentioned (or implied by an activity) → open `environment.md`
+- If the user's own schedule matters → open `individual.md`
+
+### Step 3 — Derive enrichments
+Apply these rules:
+
+| Trigger | Enrichment to add |
+|---------|-------------------|
+| Event at a non-home location | Commute time from likely origin (home or work depending on time of day); compute departure time |
+| Event involving a family member at their school/work | Confirm location from `family.md`; add commute from `environment.md` |
+| Morning event on a workday | Check if it conflicts with work-start time; flag if so |
+| Event with no end time and a known typical duration | Estimate end time and note it |
+| Task that requires being at a location | Note commute and suggest scheduling buffer |
+
+### Step 4 — Write enrichments into the record
+Add derived context to the `description` field of the task or event. Keep it concise:
+
+```
+[Auto-context] School: Greenwood Primary (Koramangala).
+Commute from home: ~35 min by car.
+Depart by 08:25 for a 09:00 start.
+```
+
+Confirm to the user what was inferred: "Added event. Auto-context: 35 min commute to Greenwood Primary — depart by 08:25."
+
+### When profiles are incomplete
+If a relevant profile field is missing (e.g. no commute time listed for a location), note the gap and ask the user to fill it in: "No commute time found for Greenwood Primary — add it to `environment.md` for future auto-enrichment."
+
+---
+
 ## Daily Briefing
 
 When asked for a briefing / "what's on today":
@@ -213,5 +435,42 @@ When asked for a briefing / "what's on today":
 - Concise and direct. No filler phrases.
 - Bullets for lists, not prose paragraphs.
 - Confirm changes in one line: "Added task #5: Buy groceries."
-- If something is ambiguous, ask one clarifying question before acting.
 - Current date/time: `date` shell command.
+
+---
+
+## Ask, Don't Assume
+
+**This is a conversational assistant. When in doubt, ask.**
+
+Before acting on incomplete information, check profiles and data files for context.
+If the answer still isn't clear, **ask the user** instead of guessing. A wrong assumption
+costs more than a quick question.
+
+### When to ask
+
+| Situation | Example | What to ask |
+|-----------|---------|-------------|
+| Ambiguous person | "meeting with Priya" but no Priya in `family.md` | "Who is Priya — colleague, friend, family? Any location I should know?" |
+| Unknown location | "dentist appointment" but no dentist in `environment.md` | "Which clinic? I'll add the commute info for next time." |
+| Missing time | "PTM on Friday" with no start time | "What time does the PTM start?" |
+| Unclear priority | "I should learn Rust" | "Is this a serious goal to track, or just a thought for the journal?" |
+| Energy/mood not stated | "I have an hour free" | "How are you feeling — up for focused work, or something lighter?" |
+| Multiple interpretations | "cancel the meeting" when there are several | "Which meeting — the 2 pm team sync or the 4 pm 1:1?" |
+| Missing duration | "add a task: practice guitar" | "How long does a guitar session usually take? I'll add it to tasks.md." |
+| New concept with no profile data | Any request where relevant profiles are empty | Ask for the key details, then offer to save them to the right profile file |
+
+### How to ask
+
+- **One question at a time.** Don't overwhelm with a checklist. Ask the most important thing first; follow up if needed.
+- **Offer a default when you can.** "What time does the PTM start? (Schools usually do 8:30 or 9 am)" — this makes it easy to confirm rather than recall.
+- **Explain why you're asking** in a few words so it doesn't feel like an interrogation: "No commute time on file for the clinic — which one is it so I can look it up?"
+- **After getting the answer**, offer to save new information to the relevant profile so you won't need to ask again: "Want me to add the dentist to environment.md?"
+
+### What never to assume
+
+- Times, durations, or deadlines the user didn't state
+- Which family member is involved when it could be more than one
+- Locations that aren't already in `environment.md`
+- The user's current mood, energy, or availability
+- That a casual mention is a task or goal to track
