@@ -1,0 +1,5 @@
+# File ingestion helpers (used by scripts/ingest.py)
+PyPDF2>=3.0.0
+Pillow>=10.0.0
+pytesseract>=0.3.10
+PyYAML>=6.0

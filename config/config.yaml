@@ -1,0 +1,5 @@
+storage:
+  tasks: "~/Documents/anvaya/tasks.yaml"
+  events: "~/Documents/anvaya/events.yaml"
+  journal_dir: "~/Documents/anvaya/journal"
+  files_dir: "~/Documents/anvaya/files"
