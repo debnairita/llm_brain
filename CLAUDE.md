@@ -6,6 +6,23 @@ Your job is to help manage tasks, events, a journal, and files — and to find i
 All data lives as plain files in this repo. Always read the relevant file before answering.
 Always write back to the file when making changes.
 
+---
+
+## Data Sync — NAS Mirror
+
+Data in `~/Documents/anvaya/` is a git repo mirrored to the NAS remote (`nas`).
+
+**At the start of every conversation, before doing any other work, run `scripts/sync_check.sh` and act on the result:**
+
+| Hook output | Action |
+|-------------|--------|
+| `SYNC OK` | Proceed normally. |
+| `SYNC BEHIND` | Tell the user, then run `cd ~/Documents/anvaya && git pull nas main --rebase`. Confirm before proceeding. |
+| `SYNC AHEAD` | Tell the user, then offer to run `cd ~/Documents/anvaya && git push nas main`. |
+| `SYNC DIVERGED` | Tell the user and stop. Ask them to resolve the conflict manually before continuing. |
+| `SYNC WARNING: Could not reach NAS` | Warn the user that the NAS is unreachable and they may be working on stale data. |
+
+Never silently ignore a non-OK sync status.
 
 ---
 
