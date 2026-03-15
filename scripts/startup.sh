@@ -10,11 +10,72 @@ ANVAYA_DIR="${HOME}/Documents/anvaya"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-PYTHON="$(command -v python3 || true)"
-if [ -z "${PYTHON}" ]; then
+# --- Detect OS ---
+OS="$(uname -s)"
+case "${OS}" in
+  Darwin) OS_NAME="macOS" ;;
+  Linux)
+    if grep -qi ubuntu /etc/os-release 2>/dev/null; then
+      OS_NAME="Ubuntu"
+    else
+      OS_NAME="Linux"
+    fi
+    ;;
+  *) OS_NAME="${OS}" ;;
+esac
+echo "==> Detected OS: ${OS_NAME}"
+
+# --- Check and install system dependencies ---
+if [ "${OS_NAME}" = "Ubuntu" ]; then
+  MISSING_APT=()
+  command -v tesseract >/dev/null 2>&1 || MISSING_APT+=("tesseract-ocr")
+  python3 -m venv --help >/dev/null 2>&1 || MISSING_APT+=("python3-venv")
+  dpkg -s libjpeg-dev >/dev/null 2>&1 || MISSING_APT+=("libjpeg-dev")
+  dpkg -s zlib1g-dev >/dev/null 2>&1 || MISSING_APT+=("zlib1g-dev")
+  if [ ${#MISSING_APT[@]} -gt 0 ]; then
+    echo "==> Installing missing system packages: ${MISSING_APT[*]}"
+    sudo apt-get install -y "${MISSING_APT[@]}"
+  fi
+elif [ "${OS_NAME}" = "macOS" ]; then
+  if ! command -v brew >/dev/null 2>&1; then
+    echo "WARNING: Homebrew not found. If packages are missing, install it from https://brew.sh" >&2
+  else
+    MISSING_BREW=()
+    command -v tesseract >/dev/null 2>&1 || MISSING_BREW+=("tesseract")
+    if [ ${#MISSING_BREW[@]} -gt 0 ]; then
+      echo "==> Installing missing Homebrew packages: ${MISSING_BREW[*]}"
+      brew install "${MISSING_BREW[@]}"
+    fi
+  fi
+fi
+echo ""
+
+SYSTEM_PYTHON="$(command -v python3 || true)"
+if [ -z "${SYSTEM_PYTHON}" ]; then
   echo "Error: python3 not found in PATH." >&2
   exit 1
 fi
+
+# --- Set up virtual environment ---
+VENV_DIR="${REPO_ROOT}/.venv"
+if [ ! -d "${VENV_DIR}" ]; then
+  echo "==> Creating virtual environment..."
+  if ! "${SYSTEM_PYTHON}" -m venv "${VENV_DIR}"; then
+    if [ "${OS_NAME}" = "Ubuntu" ]; then
+      echo "Error: venv creation failed. Run: sudo apt install python3-venv" >&2
+    else
+      echo "Error: venv creation failed." >&2
+    fi
+    exit 1
+  fi
+fi
+PYTHON="${VENV_DIR}/bin/python3"
+echo "==> Installing/updating requirements..."
+"${VENV_DIR}/bin/pip" install -q -r "${REPO_ROOT}/requirements.txt"
+echo "Requirements up to date."
+echo ""
+echo "To activate the venv in your shell: source .venv/bin/activate"
+echo ""
 
 # --- Pull latest project code from GitHub ---
 echo "==> Pulling latest Anvaya code from GitHub..."

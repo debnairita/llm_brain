@@ -14,6 +14,15 @@ Data in `~/Documents/anvaya/` is a git repo mirrored to the NAS remote (`nas`).
 
 The user runs `scripts/startup.sh` manually before starting a session. It handles NAS sync and reindex automatically. **Do not run any sync or reindex commands on your own.** If the user reports stale data or a sync issue, suggest they run `scripts/startup.sh`.
 
+## Python — Virtual Environment
+
+A virtual environment lives at `.venv/` in the repo root. **Always use `.venv/bin/python` (not `python3`) when running any script.** `source .venv/bin/activate` does not persist across Claude's Bash tool calls, so use the full path instead:
+
+```bash
+.venv/bin/python scripts/reindex.py
+.venv/bin/python scripts/ingest.py /path/to/file
+```
+
 ---
 
 ## Data Layout
