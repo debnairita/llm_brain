@@ -12,17 +12,7 @@ Always write back to the file when making changes.
 
 Data in `~/Documents/anvaya/` is a git repo mirrored to the NAS remote (`nas`).
 
-**At the start of every conversation, before doing any other work, run `scripts/sync_check.sh` and act on the result:**
-
-| Hook output | Action |
-|-------------|--------|
-| `SYNC OK` | Proceed normally. |
-| `SYNC BEHIND` | Tell the user, then run `cd ~/Documents/anvaya && git pull nas main --rebase`. Confirm before proceeding. |
-| `SYNC AHEAD` | Tell the user, then offer to run `cd ~/Documents/anvaya && git push nas main`. |
-| `SYNC DIVERGED` | Tell the user and stop. Ask them to resolve the conflict manually before continuing. |
-| `SYNC WARNING: Could not reach NAS` | Warn the user that the NAS is unreachable and they may be working on stale data. |
-
-Never silently ignore a non-OK sync status.
+The user runs `scripts/startup.sh` manually before starting a session. It handles NAS sync and reindex automatically. **Do not run any sync or reindex commands on your own.** If the user reports stale data or a sync issue, suggest they run `scripts/startup.sh`.
 
 ---
 

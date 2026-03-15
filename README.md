@@ -44,13 +44,17 @@ mkdir -p ~/Documents/anvaya/journal \
          ~/Documents/anvaya/files/notes
 ```
 
-Open the project in Claude Code:
+Run the startup script before each session:
+
+```bash
+bash scripts/startup.sh
+```
+
+This syncs `~/Documents/anvaya/` with the NAS remote (pulling if behind, pushing if ahead) and rebuilds the index. Then open the project in Claude Code:
 
 ```bash
 claude
 ```
-
-The assistant reads `CLAUDE.md` automatically and is ready to use.
 
 ---
 
@@ -78,8 +82,9 @@ Nothing in this directory is committed to git — it is purely local personal da
 
 | Script | Purpose |
 |---|---|
+| `scripts/startup.sh` | Sync with NAS remote and rebuild the index — run before each session |
 | `scripts/ingest.py <file>` | Extract text/metadata from a file and print JSON for Claude to classify and store |
-| `scripts/reindex.py` | Rebuild `index.yaml` from scratch by scanning all journal files and file metadata |
+| `scripts/reindex.py` | Rebuild `index.yaml` from scratch — called by `startup.sh`, or run manually after bulk file changes |
 
 ---
 
