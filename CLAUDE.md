@@ -296,19 +296,15 @@ Three sections:
 ```markdown
 # Task Durations & Requirements
 
-| Task | Duration | Energy | Location | Related Goal | Notes |
-|------|----------|--------|----------|--------------|-------|
-| Read a chapter | 25 min | focused | anywhere | Read 20 books | use Pomodoro |
-| Morning run | 30 min | energetic | outdoors | Fitness | stretch after |
-| Sketch practice | 20 min | creative-relaxed | home | Learn drawing | use iPad |
-| Review flashcards | 15 min | low-energy | anywhere | Learn Spanish | Anki deck |
-| Meal prep | 45 min | relaxed | home (kitchen) | Eat healthier | batch cook Sun |
-```
+## Category Name
 
-<!--
-The Duration column is an estimate — use it for scheduling suggestions.
-The Energy column tells you which tasks fit the user's current state.
--->
+### Task Name
+- Duration: X min
+- Energy: focused | relaxed | low-energy | energetic | creative | social
+- Location: home | office | anywhere | outdoors
+- Related goal: (goal name or omit)
+- Notes: any context, sequencing rules, or tips
+```
 
 `calendar.md`:
 ```markdown
