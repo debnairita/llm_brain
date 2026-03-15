@@ -24,7 +24,8 @@ Data lives outside the repo at the paths configured in `config/config.yaml` (def
 │   ├── family.md       # family members, their schools/workplaces, schedules
 │   ├── environment.md  # key locations and commute times between them
 │   ├── goals.md        # personal goals, what kind of work they need
-│   └── tasks.md        # task-type durations and energy/context requirements
+│   ├── tasks.md        # task-type durations and energy/context requirements
+│   └── calendar.md     # public holidays, personal vacations, work blackout periods
 └── files/
     ├── documents/      # PDFs, spreadsheets, text files
     │   └── <subcategory>/
@@ -206,7 +207,7 @@ Search `data/index.yaml` under `files:` — match by `category`, `subcategory`, 
 
 ## Profiles — `~/Documents/anvaya/profiles/`
 
-Five files capture standing personal context. **Read them whenever you are adding or enriching a task or event, or when the user has free time and wants suggestions.**
+Six files capture standing personal context. **Read them whenever you are adding or enriching a task or event, or when the user has free time and wants suggestions.**
 
 ### `individual.md`
 The user's identity, employer, work location, typical daily schedule, and personal preferences relevant to planning.
@@ -244,6 +245,27 @@ Each entry records:
 - Location / context: home, office, anywhere, outdoors, gym
 - Related goal (if any)
 - Notes
+
+### `calendar.md`
+Public holidays, personal vacations, and work blackout periods for the current (and future) years.
+
+Three sections:
+- **Public Holidays** — date + name + notes; used to flag scheduling conflicts
+- **Personal Vacations** — from/to date range + destination; used for pre-trip prep planning and post-return buffers
+- **Work Blackout Periods** — any non-holiday unavailability (leave, exams, etc.)
+
+**Read `calendar.md` when:**
+- Scheduling a task or event — check that the target date is not a holiday, vacation, or blackout day
+- Planning ahead — surface upcoming holidays/vacations as context (e.g. "note: you're on vacation that week")
+- Suggesting free-time activities — exclude vacation/holiday days from "normal" goal-work suggestions if the user is travelling
+
+**Conflict rules:**
+| Situation | Action |
+|-----------|--------|
+| Task due date falls on a public holiday | Warn and suggest rescheduling to the working day before |
+| Event scheduled during a vacation | Flag: "You'll be away — is this intentional (e.g. a travel activity)?" |
+| Event scheduled during a blackout period | Flag the conflict before saving |
+| Upcoming vacation within 7 days | Proactively note it during daily briefing and suggest pre-trip prep tasks |
 
 ### Profile file format
 
@@ -329,6 +351,28 @@ Each entry records:
 The Duration column is an estimate — use it for scheduling suggestions.
 The Energy column tells you which tasks fit the user's current state.
 -->
+
+`calendar.md`:
+```markdown
+# Calendar
+
+## Public Holidays
+
+| Date       | Name                  | Notes                          |
+|------------|-----------------------|--------------------------------|
+| YYYY-MM-DD | Holiday Name          | e.g. national, regional, bank  |
+
+## Personal Vacations
+
+| From       | To         | Destination / Label        | Notes                                  |
+|------------|------------|----------------------------|----------------------------------------|
+| YYYY-MM-DD | YYYY-MM-DD | e.g. Goa beach trip        | flights booked, hotel: …               |
+
+## Work Blackout Periods
+
+| From       | To         | Reason                     | Notes                                  |
+|------------|------------|----------------------------|----------------------------------------|
+| YYYY-MM-DD | YYYY-MM-DD | e.g. parental leave        |                                        |
 ```
 
 ---
@@ -358,6 +402,10 @@ From the user's message, extract:
 3. Check tasks.yaml
    → Any pending tasks with due dates soon that also fit the time/energy window?
    → These get top priority — real deadlines beat goal work
+
+3a. Check profiles/calendar.md
+   → If today is a public holiday or vacation day, prefer leisure/personal tasks over work tasks
+   → Note the day type to the user ("Today is a holiday — skipping work tasks")
 
 4. Suggest 2–3 options, ordered by priority:
    - First: any urgent pending task that fits
@@ -392,6 +440,7 @@ Scan the user's input for:
 - Any person mentioned → open `family.md`, find their section
 - Any place mentioned (or implied by an activity) → open `environment.md`
 - If the user's own schedule matters → open `individual.md`
+- Always open `calendar.md` when the target date is specified — check for holidays, vacations, blackouts
 
 ### Step 3 — Derive enrichments
 Apply these rules:
@@ -403,6 +452,9 @@ Apply these rules:
 | Morning event on a workday | Check if it conflicts with work-start time; flag if so |
 | Event with no end time and a known typical duration | Estimate end time and note it |
 | Task that requires being at a location | Note commute and suggest scheduling buffer |
+| Date falls on a public holiday (from `calendar.md`) | Warn; suggest moving task/event to nearest working day |
+| Date falls within a vacation or blackout period | Flag conflict; ask if intentional before saving |
+| Vacation starts within 7 days | Note in description; suggest adding a pre-trip prep task |
 
 ### Step 4 — Write enrichments into the record
 Add derived context to the `description` field of the task or event. Keep it concise:
@@ -426,7 +478,8 @@ When asked for a briefing / "what's on today":
 1. `data/tasks.yaml` → pending/in_progress tasks by priority
 2. `data/events.yaml` → today's events + next 3 days
 3. `data/index.yaml` → check if today's journal file exists; if so, open it for any morning notes
-4. Synthesize into a concise summary — no filler, bullets only
+4. `profiles/calendar.md` → note if today or the next 3 days include a public holiday or vacation; flag upcoming vacations within 7 days
+5. Synthesize into a concise summary — no filler, bullets only
 
 ---
 
