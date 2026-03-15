@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Anvaya startup script.
+# - Pulls latest Anvaya project code from GitHub (origin/main)
 # - Syncs ~/Documents/anvaya with the NAS remote (pull if behind, push if ahead)
 # - Rebuilds the index via reindex.py
 
@@ -14,6 +15,35 @@ if [ -z "${PYTHON}" ]; then
   echo "Error: python3 not found in PATH." >&2
   exit 1
 fi
+
+# --- Pull latest project code from GitHub ---
+echo "==> Pulling latest Anvaya code from GitHub..."
+cd "${REPO_ROOT}"
+if ! git fetch origin --quiet 2>/dev/null; then
+  echo "WARNING: Could not reach GitHub. Skipping code pull."
+  echo ""
+else
+  LOCAL=$(git rev-parse @)
+  REMOTE=$(git rev-parse "origin/main" 2>/dev/null || true)
+  BASE=$(git merge-base @ "origin/main" 2>/dev/null || true)
+
+  if [ -z "${REMOTE}" ]; then
+    echo "INFO: Could not resolve origin/main. Skipping code pull."
+  elif [ "${LOCAL}" = "${REMOTE}" ]; then
+    echo "Code up to date with GitHub."
+  elif [ "${LOCAL}" = "${BASE}" ]; then
+    BEHIND=$(git rev-list --count HEAD..origin/main 2>/dev/null || echo "?")
+    echo "Behind by ${BEHIND} commit(s) — pulling..."
+    git pull origin main --rebase
+    echo "Pull complete."
+  elif [ "${REMOTE}" = "${BASE}" ]; then
+    echo "INFO: Local code is ahead of GitHub. No pull needed."
+  else
+    echo "WARNING: Local code has diverged from GitHub. Skipping pull — resolve manually." >&2
+    echo "  cd ${REPO_ROOT} && git status" >&2
+  fi
+fi
+echo ""
 
 if [ ! -d "${ANVAYA_DIR}/.git" ]; then
   echo "Error: ${ANVAYA_DIR} is not a git repository." >&2
