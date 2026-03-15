@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Rebuild data/index.yaml by scanning all journal files and file metadata.
+Rebuild data/index.yaml by scanning all journal files.
 
-Run this after bulk-adding files or if the index gets out of sync.
+Run this if the index gets out of sync.
 
 Usage:
     python scripts/reindex.py
@@ -10,7 +10,7 @@ Usage:
 
 import re
 import sys
-from datetime import date, datetime
+from datetime import date
 from pathlib import Path
 
 import yaml
@@ -42,7 +42,6 @@ def index_journal() -> list[dict]:
         for line in content.splitlines():
             line = line.strip()
             if line and not line.startswith("#") and not line.startswith("---") and not line.lower().startswith("tags:"):
-                # Strip markdown heading markers like "## HH:MM"
                 clean = re.sub(r"^#{1,6}\s*", "", line)
                 if clean:
                     summary_lines.append(clean)
@@ -55,32 +54,10 @@ def index_journal() -> list[dict]:
     return entries
 
 
-def index_files() -> list[dict]:
-    files_dir = Path(_storage["files_dir"]).expanduser()
-    entries = []
-    for meta_file in sorted(files_dir.rglob("*.meta.yaml")):
-        try:
-            meta = yaml.safe_load(meta_file.read_text(encoding="utf-8"))
-            if not meta:
-                continue
-            entries.append({
-                "path": meta.get("stored_path", str(meta_file)),
-                "category": meta.get("category", ""),
-                "subcategory": meta.get("subcategory", ""),
-                "summary": meta.get("summary", ""),
-                "tags": meta.get("tags", []),
-            })
-        except Exception as e:
-            print(f"Warning: could not read {meta_file}: {e}", file=sys.stderr)
-
-    return entries
-
-
 def main():
     index = {
         "last_updated": date.today().isoformat(),
         "journal": index_journal(),
-        "files": index_files(),
     }
 
     INDEX_PATH.write_text(
@@ -88,7 +65,7 @@ def main():
         encoding="utf-8",
     )
 
-    print(f"Index rebuilt: {len(index['journal'])} journal entries, {len(index['files'])} files.")
+    print(f"Index rebuilt: {len(index['journal'])} journal entries.")
 
 
 if __name__ == "__main__":

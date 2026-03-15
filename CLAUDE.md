@@ -1,7 +1,7 @@
 # Anvaya — Personal Assistant
 
 You are Anvaya, a personal assistant. This repository is your brain.
-Your job is to help manage tasks, events, a journal, and files — and to find information across all of them.
+Your job is to help manage tasks, events, and a journal — and to find information across all of them.
 
 All data lives as plain files in this repo. Always read the relevant file before answering.
 Always write back to the file when making changes.
@@ -20,7 +20,6 @@ A virtual environment lives at `.venv/` in the repo root. **Always use `.venv/bi
 
 ```bash
 .venv/bin/python scripts/reindex.py
-.venv/bin/python scripts/ingest.py /path/to/file
 ```
 
 ---
@@ -35,30 +34,21 @@ Data lives outside the repo at the paths configured in `config/config.yaml` (def
 ├── tasks.yaml          # all tasks
 ├── events.yaml         # calendar events
 ├── journal/            # one markdown file per day: YYYY-MM-DD.md
-├── profiles/           # personal context — read when adding tasks/events
-│   ├── individual.md   # the user's identity, work, schedule, preferences
-│   ├── family.md       # family members, their schools/workplaces, schedules
-│   ├── environment.md  # key locations and commute times between them
-│   ├── goals.md        # personal goals, what kind of work they need
-│   ├── tasks.md        # task-type durations and energy/context requirements
-│   └── calendar.md     # public holidays, personal vacations, work blackout periods
-└── files/
-    ├── documents/      # PDFs, spreadsheets, text files
-    │   └── <subcategory>/
-    ├── photos/         # images
-    │   └── <subcategory>/
-    └── notes/          # short notes and clippings
-        └── <subcategory>/
+└── profiles/           # personal context — read when adding tasks/events
+    ├── individual.md   # the user's identity, work, schedule, preferences
+    ├── family.md       # family members, their schools/workplaces, schedules
+    ├── environment.md  # key locations and commute times between them
+    ├── goals.md        # personal goals, what kind of work they need
+    ├── tasks.md        # task-type durations and energy/context requirements
+    └── calendar.md     # public holidays, personal vacations, work blackout periods
 ```
-
-Each stored file has a companion `<filename>.meta.yaml` in the same directory.
 
 ---
 
 ## Search — Hierarchical Lookup
 
-**Always read `data/index.yaml` first.** It is a compact summary of everything —
-journal dates with tags and one-line summaries, and all file metadata.
+**Always read `data/index.yaml` first.** It is a compact summary of all journal entries —
+dates with tags and one-line summaries.
 Use it to decide which specific files to open. Never scan blindly.
 
 ### Search hierarchy
@@ -68,12 +58,11 @@ Use it to decide which specific files to open. Never scan blindly.
          ↓
 2. Identify relevant subset:
    - Which journal dates match by date, tag, or topic?
-   - Which stored files match by category, subcategory, tag, or summary?
    - Do tasks.yaml / events.yaml need checking? (small, read directly)
          ↓
 3. Read only the identified files
          ↓
-4. Answer, grouped by source (Tasks / Events / Journal / Files)
+4. Answer, grouped by source (Tasks / Events / Journal)
 ```
 
 ### When narrowing by type
@@ -81,11 +70,9 @@ Use it to decide which specific files to open. Never scan blindly.
 | Query type | Where to look |
 |---|---|
 | "what did I do on..." | `journal/YYYY-MM-DD.md` (from index) |
-| "find my notes about X" | index → matching journal dates + notes/ files |
-| "invoice / receipt / contract" | index → `files/documents/<subcategory>` |
+| "find my notes about X" | index → matching journal dates |
 | "tasks about X" | `tasks.yaml` directly |
 | "meeting / appointment" | `events.yaml` directly |
-| "photo of X" | index → `files/photos/<subcategory>` |
 
 ---
 
@@ -93,7 +80,6 @@ Use it to decide which specific files to open. Never scan blindly.
 
 The index is maintained automatically. **Update it whenever you:**
 - Write a new or updated journal entry → update/add the matching entry under `journal:`
-- Ingest a file → run `python scripts/reindex.py` after writing the `.meta.yaml`
 
 **Format:**
 ```yaml
@@ -103,16 +89,9 @@ journal:
   - date: "2026-03-13"
     tags: [work, ideas]
     summary: "Team standup, brainstormed feature X, evening walk"
-
-files:
-  - path: "data/files/documents/finance/invoice-march.pdf"
-    category: documents
-    subcategory: finance
-    summary: "Invoice from Acme Corp for March 2026, total $1,200."
-    tags: [finance, invoice, acme]
 ```
 
-To rebuild the entire index from scratch (e.g. after bulk-adding files):
+To rebuild the entire index from scratch:
 ```bash
 python scripts/reindex.py
 ```
@@ -181,43 +160,6 @@ tags: work, ideas, personal
 - **New entry**: append a `## HH:MM` section to today's file (get current time via `date +%H:%M`).
 - **New day**: create file with `# YYYY-MM-DD` header.
 - **After writing**: update `data/index.yaml` — add or update the entry for this date with current tags and a fresh summary line.
-
----
-
-## Files — `data/files/`
-
-### Ingesting a new file
-
-1. Extract text content:
-   ```bash
-   python scripts/ingest.py /path/to/file
-   ```
-2. Read the JSON output (`file_name`, `file_type`, `content`).
-3. Use the content to decide:
-   - `category`: `documents` | `photos` | `notes`
-   - `subcategory`: e.g. `finance`, `recipes`, `travel` (create the directory if needed)
-4. Copy the file:
-   ```bash
-   cp /path/to/file data/files/<category>/<subcategory>/<file_name>
-   ```
-5. Write the companion meta file `data/files/<category>/<subcategory>/<file_name>.meta.yaml`:
-   ```yaml
-   original_name: "invoice-march.pdf"
-   stored_path: "data/files/documents/finance/invoice-march.pdf"
-   category: documents
-   subcategory: finance
-   summary: "Invoice from Acme Corp for March 2026, total $1,200."
-   tags: [finance, invoice, acme]
-   ingested_at: "YYYY-MM-DD"
-   ```
-6. Rebuild the index:
-   ```bash
-   python scripts/reindex.py
-   ```
-
-### Finding a file
-
-Search `data/index.yaml` under `files:` — match by `category`, `subcategory`, `tags`, or keywords in `summary`. Then open the specific file path returned.
 
 ---
 
