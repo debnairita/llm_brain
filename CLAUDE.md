@@ -35,6 +35,7 @@ Data lives outside the repo at the paths configured in `config/config.yaml` (def
 ├── events.yaml         # calendar events
 ├── journal/            # one markdown file per day: YYYY-MM-DD.md
 └── profiles/           # personal context — read when adding tasks/events
+    ├── directives.md   # guiding principles — read this FIRST for any scheduling or suggestion
     ├── individual.md   # the user's identity, work, schedule, preferences
     ├── family.md       # family members, their schools/workplaces, schedules
     ├── environment.md  # key locations and commute times between them
@@ -163,9 +164,21 @@ tags: work, ideas, personal
 
 ---
 
+## Directives — `profiles/directives.md`
+
+**Read `directives.md` first** whenever you are:
+- Scheduling or adding a task or event
+- Suggesting what to do with free time
+- Giving a daily briefing
+- Resolving any conflict between competing priorities
+
+Directives override default priority logic from all other profile files. They define the rules for trade-offs, protected time blocks, communication requirements, and hard constraints.
+
+---
+
 ## Profiles — `~/Documents/anvaya/profiles/`
 
-Six files capture standing personal context. **Read them whenever you are adding or enriching a task or event, or when the user has free time and wants suggestions.**
+Seven files capture standing personal context. **Read them whenever you are adding or enriching a task or event, or when the user has free time and wants suggestions.**
 
 ### `individual.md`
 The user's identity, employer, work location, typical daily schedule, and personal preferences relevant to planning.
