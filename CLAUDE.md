@@ -8,11 +8,11 @@ Always write back to the file when making changes.
 
 ---
 
-## Data Sync — NAS Mirror
+## Data Sync
 
-Data in `~/Documents/llm_brain/` is a git repo mirrored to the NAS remote (`nas`).
+Data in `~/Documents/llm_brain/` is a plain git repo. Remote sync is optional — the user may or may not have a remote configured.
 
-The user runs `scripts/startup.sh` manually before starting a session. It handles NAS sync and reindex automatically. **Do not run any sync or reindex commands on your own.** If the user reports stale data or a sync issue, suggest they run `scripts/startup.sh`.
+The user runs `scripts/startup.sh` manually before starting a session. It handles remote sync (if configured) and reindex automatically. **Do not run any sync or reindex commands on your own.** If the user reports stale data or a sync issue, suggest they run `scripts/startup.sh`.
 
 ## Python — Virtual Environment
 

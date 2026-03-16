@@ -20,27 +20,45 @@ A plain-file personal assistant powered by Claude Code. Manages tasks, calendar 
 ```bash
 git clone git@github.com:royvineet/llm_brain.git
 cd llm_brain
-pip install -r requirements.txt   # optional — only needed for file ingestion
 ```
 
-Configure your data directory in `config/config.yaml` (default: `~/Documents/llm_brain/`):
+**First-time setup** — create the data directory with template files:
+
+```bash
+bash scripts/init.sh
+```
+
+This creates `~/Documents/llm_brain/` with blank `tasks.yaml`, `events.yaml`, `index.yaml`, and template profile files under `profiles/`. It also initialises a git repo in the data directory so your data is version-tracked from day one. Backups and remote sync are your responsibility — see below.
+
+To use a different data location:
+
+```bash
+bash scripts/init.sh --data-dir /path/to/your/data
+```
+
+Then update `config/config.yaml` to match:
 
 ```yaml
 storage:
-  tasks: "~/Documents/llm_brain/tasks.yaml"
-  events: "~/Documents/llm_brain/events.yaml"
-  journal_dir: "~/Documents/llm_brain/journal"
-  files_dir: "~/Documents/llm_brain/files"
+  tasks: "/path/to/your/data/tasks.yaml"
+  events: "/path/to/your/data/events.yaml"
+  journal_dir: "/path/to/your/data/journal"
+  profiles_dir: "/path/to/your/data/profiles"
 ```
 
-Create the data directory:
+Fill in the profile files in `~/Documents/llm_brain/profiles/` before your first session — they tell Claude who you are, your schedule, family, locations, and goals.
+
+**Optional: back up your data to a remote**
+
+The data directory is a plain git repo. Point it at any remote you like:
 
 ```bash
-mkdir -p ~/Documents/llm_brain/journal \
-         ~/Documents/llm_brain/files/documents \
-         ~/Documents/llm_brain/files/photos \
-         ~/Documents/llm_brain/files/notes
+# GitHub (private repo recommended), NAS, any git server, etc.
+git -C ~/Documents/llm_brain remote add origin <url>
+git -C ~/Documents/llm_brain branch --set-upstream-to=origin/main main
 ```
+
+`startup.sh` will automatically push/pull if a remote is configured, and skip sync silently if there is none.
 
 Run the startup script before each session:
 
@@ -48,7 +66,7 @@ Run the startup script before each session:
 bash scripts/startup.sh
 ```
 
-This syncs `~/Documents/llm_brain/` with the NAS remote (pulling if behind, pushing if ahead) and rebuilds the index. Then open the project in Claude Code:
+This syncs with your remote (if configured), rebuilds the index, and purges expired todos. Then open the project in Claude Code:
 
 ```bash
 claude
@@ -72,7 +90,7 @@ Data lives outside the repo at the path configured in `config/config.yaml`. Defa
     └── notes/          # short notes and clippings
 ```
 
-Nothing in this directory is committed to git — it is purely local personal data.
+This directory is its own git repo (created by `init.sh`). Changes are tracked locally; push to a remote of your choice for backup.
 
 ---
 
@@ -80,8 +98,8 @@ Nothing in this directory is committed to git — it is purely local personal da
 
 | Script | Purpose |
 |---|---|
-| `scripts/startup.sh` | Sync with NAS remote and rebuild the index — run before each session |
-| `scripts/ingest.py <file>` | Extract text/metadata from a file and print JSON for Claude to classify and store |
+| `scripts/init.sh` | One-time setup: create data directory, template profiles, and blank data files |
+| `scripts/startup.sh` | Sync with remote (if configured), rebuild index, purge expired todos — run before each session |
 | `scripts/reindex.py` | Rebuild `index.yaml` from scratch — called by `startup.sh`, or run manually after bulk file changes |
 
 ---

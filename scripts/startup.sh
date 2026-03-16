@@ -93,39 +93,51 @@ fi
 echo ""
 
 if [ ! -d "${LLM_BRAIN_DIR}/.git" ]; then
-  echo "Error: ${LLM_BRAIN_DIR} is not a git repository." >&2
+  echo "Error: ${LLM_BRAIN_DIR} is not a git repository."
+  echo "Run 'bash scripts/init.sh' first to set up the data directory." >&2
   exit 1
 fi
 
 cd "${LLM_BRAIN_DIR}"
 
-echo "==> Fetching from NAS..."
-if ! git fetch nas --quiet 2>/dev/null; then
-  echo "WARNING: Could not reach NAS. Skipping sync — data may be stale."
+# --- Sync with remote (if one is configured) ---
+REMOTE_NAME=$(git remote 2>/dev/null | head -1 || true)
+
+if [ -z "${REMOTE_NAME}" ]; then
+  echo "INFO: No git remote configured in data directory — skipping sync."
+  echo "      To back up your data, add a remote:"
+  echo "        git -C \"${LLM_BRAIN_DIR}\" remote add origin <url>"
   echo ""
 else
-  LOCAL=$(git rev-parse @)
-  REMOTE=$(git rev-parse "@{u}" 2>/dev/null || true)
-  BASE=$(git merge-base @ "@{u}" 2>/dev/null || true)
-
-  if [ -z "${REMOTE}" ]; then
-    echo "INFO: No upstream tracking branch set. Skipping sync."
-  elif [ "${LOCAL}" = "${REMOTE}" ]; then
-    echo "Sync OK: up to date with NAS."
-  elif [ "${LOCAL}" = "${BASE}" ]; then
-    BEHIND=$(git rev-list --count HEAD..nas/main 2>/dev/null || echo "?")
-    echo "SYNC BEHIND by ${BEHIND} commit(s) — pulling..."
-    git pull nas main --rebase
-    echo "Pull complete."
-  elif [ "${REMOTE}" = "${BASE}" ]; then
-    AHEAD=$(git rev-list --count nas/main..HEAD 2>/dev/null || echo "?")
-    echo "SYNC AHEAD by ${AHEAD} commit(s) — pushing..."
-    git push nas main
-    echo "Push complete."
+  echo "==> Syncing data with remote '${REMOTE_NAME}'..."
+  if ! git fetch "${REMOTE_NAME}" --quiet 2>/dev/null; then
+    echo "WARNING: Could not reach remote '${REMOTE_NAME}'. Skipping sync — data may be stale."
+    echo ""
   else
-    echo "ERROR: Local and NAS have diverged. Resolve manually before continuing." >&2
-    echo "  cd ${LLM_BRAIN_DIR} && git status" >&2
-    exit 1
+    LOCAL=$(git rev-parse @)
+    REMOTE=$(git rev-parse "@{u}" 2>/dev/null || true)
+    BASE=$(git merge-base @ "@{u}" 2>/dev/null || true)
+
+    if [ -z "${REMOTE}" ]; then
+      echo "INFO: No upstream tracking branch set. Skipping sync."
+      echo "      To track a remote branch: git -C \"${LLM_BRAIN_DIR}\" branch --set-upstream-to=${REMOTE_NAME}/main main"
+    elif [ "${LOCAL}" = "${REMOTE}" ]; then
+      echo "Sync OK: up to date with remote."
+    elif [ "${LOCAL}" = "${BASE}" ]; then
+      BEHIND=$(git rev-list --count HEAD.."${REMOTE_NAME}/main" 2>/dev/null || echo "?")
+      echo "Behind by ${BEHIND} commit(s) — pulling..."
+      git pull "${REMOTE_NAME}" main --rebase
+      echo "Pull complete."
+    elif [ "${REMOTE}" = "${BASE}" ]; then
+      AHEAD=$(git rev-list --count "${REMOTE_NAME}/main"..HEAD 2>/dev/null || echo "?")
+      echo "Ahead by ${AHEAD} commit(s) — pushing..."
+      git push "${REMOTE_NAME}" main
+      echo "Push complete."
+    else
+      echo "ERROR: Local data has diverged from remote. Resolve manually before continuing." >&2
+      echo "  cd ${LLM_BRAIN_DIR} && git status" >&2
+      exit 1
+    fi
   fi
 fi
 
