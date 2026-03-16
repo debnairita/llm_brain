@@ -1,17 +1,18 @@
 # llm_brain
 
-A plain-file personal assistant powered by Claude Code. Manages tasks, calendar events, a daily journal, and an ingested file store — all as plain YAML and Markdown on your filesystem.
+A plain-file personal assistant powered by Claude Code. Manages tasks, calendar events, a daily journal, and personal profiles — all as plain YAML and Markdown on your filesystem.
 
 ---
 
 ## What it does
 
-- **Tasks** — add, update, and prioritise to-dos
-- **Events** — track calendar events
-- **Journal** — one Markdown file per day
-- **Files** — ingest documents, photos, and notes with searchable metadata
+- **Tasks** — add, update, and prioritise to-dos; ephemeral todos auto-purge after completion
+- **Events** — track calendar events with automatic commute and schedule enrichment
+- **Journal** — one Markdown file per day; tag entries for fast lookup
+- **Profiles** — personal context (identity, family, locations, goals, calendar, reading list, checklists) that Claude reads when scheduling or suggesting activities
 - **Search** — hierarchical lookup via an index file so Claude never scans blindly
 - **Daily briefing** — ask "what's on today?" for a prioritised summary of tasks, events, and morning notes
+- **Free-time matching** — tell Claude how much time you have and your energy level; it suggests goal-aligned activities
 
 ---
 
@@ -28,7 +29,7 @@ cd llm_brain
 bash scripts/init.sh
 ```
 
-This creates `~/Documents/llm_brain/` with blank `tasks.yaml`, `events.yaml`, `index.yaml`, and template profile files under `profiles/`. It also initialises a git repo in the data directory so your data is version-tracked from day one. Backups and remote sync are your responsibility — see below.
+This creates `~/Documents/llm_brain/` with blank `tasks.yaml`, `events.yaml`, `index.yaml`, template profile files under `profiles/`, and a git repo in the data directory so your data is version-tracked from day one.
 
 To use a different data location:
 
@@ -66,7 +67,7 @@ Run the startup script before each session:
 bash scripts/startup.sh
 ```
 
-This syncs with your remote (if configured), rebuilds the index, and purges expired todos. Then open the project in Claude Code:
+This pulls the latest project code from GitHub, syncs your data with the remote (if configured), rebuilds the index, and purges expired todos. Then open the project in Claude Code:
 
 ```bash
 claude
@@ -84,10 +85,17 @@ Data lives outside the repo at the path configured in `config/config.yaml`. Defa
 ├── tasks.yaml          # all tasks
 ├── events.yaml         # calendar events
 ├── journal/            # YYYY-MM-DD.md per day
-└── files/
-    ├── documents/      # PDFs, spreadsheets, text files
-    ├── photos/         # images
-    └── notes/          # short notes and clippings
+└── profiles/
+    ├── directives.md   # guiding principles — read first for scheduling
+    ├── individual.md   # identity, work, schedule, preferences
+    ├── family.md       # family members, schedules, locations
+    ├── friends.md      # friends context
+    ├── environment.md  # key locations and commute times
+    ├── goals.md        # personal goals and progress
+    ├── tasks.md        # task-type durations and energy requirements
+    ├── calendar.md     # public holidays, vacations, blackout periods
+    ├── reading_list.md # books and articles
+    └── checklists.md   # reusable travel and prep checklists
 ```
 
 This directory is its own git repo (created by `init.sh`). Changes are tracked locally; push to a remote of your choice for backup.
@@ -99,8 +107,10 @@ This directory is its own git repo (created by `init.sh`). Changes are tracked l
 | Script | Purpose |
 |---|---|
 | `scripts/init.sh` | One-time setup: create data directory, template profiles, and blank data files |
-| `scripts/startup.sh` | Sync with remote (if configured), rebuild index, purge expired todos — run before each session |
+| `scripts/startup.sh` | Pull latest code, sync data remote (if configured), rebuild index, purge expired todos — run before each session |
 | `scripts/reindex.py` | Rebuild `index.yaml` from scratch — called by `startup.sh`, or run manually after bulk file changes |
+| `scripts/purge_todos.py` | Remove completed ephemeral tasks past their TTL; append a summary to the journal |
+| `scripts/sync_check.sh` | Check whether the data directory is in sync with its remote; exits non-zero if behind or diverged |
 
 ---
 
@@ -112,8 +122,9 @@ Just talk to Claude Code naturally:
 Add a high-priority task to review the Q1 report by Friday.
 What's on my plate today?
 Log a journal entry: finished the API refactor, blocked on auth review.
-Ingest ~/Downloads/invoice-april.pdf
+I have 45 minutes free — what should I work on?
 Find everything I have about the Berlin trip.
+What's on my reading list?
 ```
 
 ---
@@ -121,5 +132,5 @@ Find everything I have about the Berlin trip.
 ## Requirements
 
 - [Claude Code](https://claude.ai/code)
-- Python 3.10+ (for scripts)
-- `PyPDF2`, `Pillow`, `pytesseract` — only needed if ingesting PDFs or images
+- Python 3.10+
+- `PyYAML` — installed automatically by `startup.sh` via `requirements.txt`
