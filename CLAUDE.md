@@ -72,6 +72,7 @@ Use it to decide which specific files to open. Never scan blindly.
 |---|---|
 | "what did I do on..." | `journal/YYYY-MM-DD.md` (from index) |
 | "find my notes about X" | index → matching journal dates |
+| "any ideas / thoughts about X" | index → journal entries tagged `ideas`; user may journal ideas multiple times a day |
 | "tasks / todos about X" | `tasks.yaml` directly (filter by `ttl_days` to distinguish todos from real tasks) |
 | "meeting / appointment" | `events.yaml` directly |
 
@@ -152,7 +153,7 @@ events:
 
 ## Journal — `data/journal/YYYY-MM-DD.md`
 
-One file per day. Create if it doesn't exist.
+One file per day. Create if it doesn't exist. The user journals multiple times a day — including to capture ideas, thoughts, and random notes. Tag these entries with `ideas` so they're searchable.
 
 ```markdown
 # YYYY-MM-DD
