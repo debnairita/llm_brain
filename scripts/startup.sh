@@ -132,3 +132,7 @@ fi
 echo ""
 echo "==> Rebuilding index..."
 "${PYTHON}" "${REPO_ROOT}/scripts/reindex.py"
+
+echo ""
+echo "==> Purging completed todos..."
+"${PYTHON}" "${REPO_ROOT}/scripts/purge_todos.py"

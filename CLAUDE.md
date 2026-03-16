@@ -72,7 +72,7 @@ Use it to decide which specific files to open. Never scan blindly.
 |---|---|
 | "what did I do on..." | `journal/YYYY-MM-DD.md` (from index) |
 | "find my notes about X" | index → matching journal dates |
-| "tasks about X" | `tasks.yaml` directly |
+| "tasks / todos about X" | `tasks.yaml` directly (filter by `ttl_days` to distinguish todos from real tasks) |
 | "meeting / appointment" | `events.yaml` directly |
 
 ---
@@ -111,11 +111,22 @@ tasks:
     due_date: "2026-03-15" # or null
     tags: []
     created_at: "2026-03-13"
+    ttl_days: 14           # omit (or null) for permanent tasks; set integer for ephemeral todos
+    completed_at: null     # set to today's date when marking done (required for ttl_days to work)
 ```
 
 - **Add**: append a new entry; `id` = max existing id + 1.
-- **Complete**: set `status: done`.
+- **Complete**: set `status: done` and `completed_at: YYYY-MM-DD` (today).
 - **Daily plan**: list `pending` and `in_progress` sorted by `priority` (high→low) then `due_date`.
+
+### Ephemeral todos (`ttl_days`)
+
+Short-lived chores (pick up groceries, call electrician, etc.) should have `ttl_days: 14` set.
+`scripts/purge_todos.py` runs on startup and:
+- **Purges** done tasks where `completed_at` + `ttl_days` ≤ today → appends a summary to that day's journal entry, then removes from `tasks.yaml`.
+- **Warns** (does not delete) pending/in_progress ephemeral tasks older than their TTL — they still need doing.
+
+Permanent tasks (no `ttl_days`) are never touched by the purge script.
 
 ---
 
