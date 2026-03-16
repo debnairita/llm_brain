@@ -167,10 +167,26 @@ write_template "${DATA_DIR}/profiles/calendar.md" \
 | From       | To         | Destination / Label | Notes |
 |------------|------------|---------------------|-------|
 
+## Business Travel
+
+| From       | To         | Destination | Notes |
+|------------|------------|-------------|-------|
+
 ## Work Blackout Periods
 
 | From       | To         | Reason | Notes |
 |------------|------------|--------|-------|'
+
+write_template "${DATA_DIR}/profiles/friends.md" \
+'# Friends
+
+## [Friend Name]
+- How we know each other:
+- Relationship:
+- Location:
+- Family:
+- Shared interests:
+- Notes:'
 
 write_template "${DATA_DIR}/profiles/directives.md" \
 '# Directives

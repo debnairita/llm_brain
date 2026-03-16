@@ -38,10 +38,11 @@ Data lives outside the repo at the paths configured in `config/config.yaml` (def
     ├── directives.md   # guiding principles — read this FIRST for any scheduling or suggestion
     ├── individual.md   # the user's identity, work, schedule, preferences
     ├── family.md       # family members, their schools/workplaces, schedules
+    ├── friends.md      # friends — context for tasks/events involving them
     ├── environment.md  # key locations and commute times between them
     ├── goals.md        # personal goals, what kind of work they need
     ├── tasks.md        # task-type durations and energy/context requirements
-    └── calendar.md     # public holidays, personal vacations, work blackout periods
+    └── calendar.md     # public holidays, personal vacations, business travel, work blackout periods
 ```
 
 ---
