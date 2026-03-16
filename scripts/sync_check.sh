@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Checks whether ~/Documents/anvaya is in sync with upstream (NAS).
+# Checks whether ~/Documents/llm_brain is in sync with upstream (NAS).
 # Exits 0 if in sync, 1 if behind or diverged.
 
-DATA_DIR="${HOME}/Documents/anvaya"
+DATA_DIR="${HOME}/Documents/llm_brain"
 
 if [ ! -d "${DATA_DIR}/.git" ]; then
   echo "SYNC WARNING: ${DATA_DIR} is not a git repository."
@@ -32,15 +32,15 @@ if [ "${LOCAL}" = "${REMOTE}" ]; then
 elif [ "${LOCAL}" = "${BASE}" ]; then
   BEHIND=$(git rev-list --count HEAD..nas/main 2>/dev/null || echo "?")
   echo "SYNC BEHIND: Local data is ${BEHIND} commit(s) behind NAS."
-  echo "  Run: cd ~/Documents/anvaya && git pull nas main --rebase"
+  echo "  Run: cd ~/Documents/llm_brain && git pull nas main --rebase"
   exit 1
 elif [ "${REMOTE}" = "${BASE}" ]; then
   AHEAD=$(git rev-list --count nas/main..HEAD 2>/dev/null || echo "?")
   echo "SYNC AHEAD: Local data has ${AHEAD} unpushed commit(s)."
-  echo "  Run: cd ~/Documents/anvaya && git push nas main"
+  echo "  Run: cd ~/Documents/llm_brain && git push nas main"
   exit 1
 else
   echo "SYNC DIVERGED: Local and NAS have diverged. Manual reconciliation needed."
-  echo "  Run: cd ~/Documents/anvaya && git status"
+  echo "  Run: cd ~/Documents/llm_brain && git status"
   exit 1
 fi

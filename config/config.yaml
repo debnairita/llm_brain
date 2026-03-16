@@ -1,5 +1,5 @@
 storage:
-  tasks: "~/Documents/anvaya/tasks.yaml"
-  events: "~/Documents/anvaya/events.yaml"
-  journal_dir: "~/Documents/anvaya/journal"
-  profiles_dir: "~/Documents/anvaya/profiles"
+  tasks: "~/Documents/llm_brain/tasks.yaml"
+  events: "~/Documents/llm_brain/events.yaml"
+  journal_dir: "~/Documents/llm_brain/journal"
+  profiles_dir: "~/Documents/llm_brain/profiles"

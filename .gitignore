@@ -17,7 +17,7 @@ venv/
 env/
 ENV/
 
-# Data lives outside the repo at ~/Documents/anvaya/ (see config/config.yaml)
+# Data lives outside the repo at ~/Documents/llm_brain/ (see config/config.yaml)
 
 # Claude Code local settings
 .claude/

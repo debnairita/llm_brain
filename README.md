@@ -1,6 +1,4 @@
-# Anvaya
-
-> *anvaya* (अन्वय) — connection, continuity, the thread that links things together.
+# llm_brain
 
 A plain-file personal assistant powered by Claude Code. Manages tasks, calendar events, a daily journal, and an ingested file store — all as plain YAML and Markdown on your filesystem.
 
@@ -20,28 +18,28 @@ A plain-file personal assistant powered by Claude Code. Manages tasks, calendar 
 ## Setup
 
 ```bash
-git clone https://github.com/<you>/anvaya.git
-cd anvaya
+git clone git@github.com:royvineet/llm_brain.git
+cd llm_brain
 pip install -r requirements.txt   # optional — only needed for file ingestion
 ```
 
-Configure your data directory in `config/config.yaml` (default: `~/Documents/anvaya/`):
+Configure your data directory in `config/config.yaml` (default: `~/Documents/llm_brain/`):
 
 ```yaml
 storage:
-  tasks: "~/Documents/anvaya/tasks.yaml"
-  events: "~/Documents/anvaya/events.yaml"
-  journal_dir: "~/Documents/anvaya/journal"
-  files_dir: "~/Documents/anvaya/files"
+  tasks: "~/Documents/llm_brain/tasks.yaml"
+  events: "~/Documents/llm_brain/events.yaml"
+  journal_dir: "~/Documents/llm_brain/journal"
+  files_dir: "~/Documents/llm_brain/files"
 ```
 
 Create the data directory:
 
 ```bash
-mkdir -p ~/Documents/anvaya/journal \
-         ~/Documents/anvaya/files/documents \
-         ~/Documents/anvaya/files/photos \
-         ~/Documents/anvaya/files/notes
+mkdir -p ~/Documents/llm_brain/journal \
+         ~/Documents/llm_brain/files/documents \
+         ~/Documents/llm_brain/files/photos \
+         ~/Documents/llm_brain/files/notes
 ```
 
 Run the startup script before each session:
@@ -50,7 +48,7 @@ Run the startup script before each session:
 bash scripts/startup.sh
 ```
 
-This syncs `~/Documents/anvaya/` with the NAS remote (pulling if behind, pushing if ahead) and rebuilds the index. Then open the project in Claude Code:
+This syncs `~/Documents/llm_brain/` with the NAS remote (pulling if behind, pushing if ahead) and rebuilds the index. Then open the project in Claude Code:
 
 ```bash
 claude
@@ -60,10 +58,10 @@ claude
 
 ## Data layout
 
-Data lives outside the repo at the path configured in `config/config.yaml`. Default: `~/Documents/anvaya/`.
+Data lives outside the repo at the path configured in `config/config.yaml`. Default: `~/Documents/llm_brain/`.
 
 ```
-~/Documents/anvaya/
+~/Documents/llm_brain/
 ├── index.yaml          # search index — auto-maintained
 ├── tasks.yaml          # all tasks
 ├── events.yaml         # calendar events

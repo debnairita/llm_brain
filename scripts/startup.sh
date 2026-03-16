@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Anvaya startup script.
-# - Pulls latest Anvaya project code from GitHub (origin/main)
-# - Syncs ~/Documents/anvaya with the NAS remote (pull if behind, push if ahead)
+# llm_brain startup script.
+# - Pulls latest llm_brain project code from GitHub (origin/main)
+# - Syncs ~/Documents/llm_brain with the NAS remote (pull if behind, push if ahead)
 # - Rebuilds the index via reindex.py
 
 set -euo pipefail
 
-ANVAYA_DIR="${HOME}/Documents/anvaya"
+LLM_BRAIN_DIR="${HOME}/Documents/llm_brain"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
@@ -64,7 +64,7 @@ echo "To activate the venv in your shell: source .venv/bin/activate"
 echo ""
 
 # --- Pull latest project code from GitHub ---
-echo "==> Pulling latest Anvaya code from GitHub..."
+echo "==> Pulling latest llm_brain code from GitHub..."
 cd "${REPO_ROOT}"
 if ! git fetch origin --quiet 2>/dev/null; then
   echo "WARNING: Could not reach GitHub. Skipping code pull."
@@ -92,12 +92,12 @@ else
 fi
 echo ""
 
-if [ ! -d "${ANVAYA_DIR}/.git" ]; then
-  echo "Error: ${ANVAYA_DIR} is not a git repository." >&2
+if [ ! -d "${LLM_BRAIN_DIR}/.git" ]; then
+  echo "Error: ${LLM_BRAIN_DIR} is not a git repository." >&2
   exit 1
 fi
 
-cd "${ANVAYA_DIR}"
+cd "${LLM_BRAIN_DIR}"
 
 echo "==> Fetching from NAS..."
 if ! git fetch nas --quiet 2>/dev/null; then
@@ -124,7 +124,7 @@ else
     echo "Push complete."
   else
     echo "ERROR: Local and NAS have diverged. Resolve manually before continuing." >&2
-    echo "  cd ${ANVAYA_DIR} && git status" >&2
+    echo "  cd ${LLM_BRAIN_DIR} && git status" >&2
     exit 1
   fi
 fi
