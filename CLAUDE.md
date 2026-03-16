@@ -43,7 +43,8 @@ Data lives outside the repo at the paths configured in `config/config.yaml` (def
     ├── goals.md        # personal goals, what kind of work they need
     ├── tasks.md        # task-type durations and energy/context requirements
     ├── calendar.md     # public holidays, personal vacations, business travel, work blackout periods
-    └── reading_list.md # books and articles — read status, format, links
+    ├── reading_list.md # books and articles — read status, format, links
+    └── checklists.md   # reusable checklists for travel and recurring prep scenarios
 ```
 
 ---
@@ -251,6 +252,18 @@ Three sections:
 | Event scheduled during a vacation | Flag: "You'll be away — is this intentional (e.g. a travel activity)?" |
 | Event scheduled during a blackout period | Flag the conflict before saving |
 | Upcoming vacation within 7 days | Proactively note it during daily briefing and suggest pre-trip prep tasks |
+
+### `checklists.md`
+Reusable checklists for recurring scenarios (business travel, personal travel, etc.).
+
+**Read `checklists.md` when:**
+- A trip is added to `events.yaml` or `calendar.md` — reference the relevant checklist and offer to create tasks from it
+- The user asks what they need to prepare for an upcoming trip
+- The user asks to update or add a checklist
+
+Use the checklist as a template: generate one-off tasks in `tasks.yaml` from it, timed appropriately (e.g. "1 week before departure"). Do not modify the checklist itself when doing this — it is a standing template.
+
+---
 
 ### `reading_list.md`
 Books and articles the user wants to read, is reading, or has read.

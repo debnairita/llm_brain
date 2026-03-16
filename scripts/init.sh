@@ -188,6 +188,94 @@ write_template "${DATA_DIR}/profiles/friends.md" \
 - Shared interests:
 - Notes:'
 
+write_template "${DATA_DIR}/profiles/reading_list.md" \
+'# Reading List
+
+## Format
+
+| Field | Values |
+|-------|--------|
+| Status | `not-started` · `in-progress` · `paused` · `done` |
+| Format | `physical` · `kindle` · `audiobook` · `web` · `pdf` |
+| Type | `book` · `article` · `paper` |
+
+---
+
+## Books & Audiobooks
+
+| Title | Author | Status | Format | Notes | Link |
+|-------|--------|--------|--------|-------|------|
+
+---
+
+## Articles & Papers
+
+| Title | Source / Author | Status | Format | Notes | Link |
+|-------|-----------------|--------|--------|-------|------|'
+
+write_template "${DATA_DIR}/profiles/checklists.md" \
+'# Checklists
+
+Reusable templates for recurring travel and preparation scenarios.
+When a trip is added, reference the relevant checklist to create one-off tasks.
+
+---
+
+## Business Travel
+
+### 1–2 Weeks Before
+- [ ] Book flights
+- [ ] Book accommodation
+- [ ] Confirm visa / travel documents
+- [ ] Notify wife of travel dates and itinerary
+- [ ] Arrange coverage for family responsibilities while away
+
+### 2–3 Days Before
+- [ ] Pack clothes and toiletries
+- [ ] Carry adapters / chargers
+- [ ] Carry work laptop and accessories
+- [ ] Check weather at destination
+- [ ] Download offline maps / confirm transport from airport
+
+### Day Of
+- [ ] Passport and travel documents
+- [ ] Local and foreign currency / cards
+- [ ] Phone fully charged
+- [ ] Confirm accommodation check-in details
+
+### On Return
+- [ ] Unpack and do laundry
+- [ ] Clear pending work emails / follow-ups from trip
+
+---
+
+## Personal / Family Travel
+
+### 1–2 Weeks Before
+- [ ] Book flights / train
+- [ ] Book accommodation
+- [ ] Check travel documents for all family members
+- [ ] Plan rough itinerary and share with wife
+- [ ] Arrange any special requirements (child'"'"'s needs, mother'"'"'s needs, etc.)
+
+### 2–3 Days Before
+- [ ] Pack for everyone (clothes, toiletries, medications)
+- [ ] Pack son'"'"'s entertainment / snacks for journey
+- [ ] Carry adapters / chargers
+- [ ] Check weather at destination
+- [ ] Download offline maps / confirm transport from airport
+
+### Day Of
+- [ ] All passports / IDs and travel documents
+- [ ] Currency / cards
+- [ ] Phones and devices charged
+- [ ] Confirm accommodation check-in details
+- [ ] Snacks and water for journey
+
+### On Return
+- [ ] Unpack and do laundry
+- [ ] Catch up on anything deferred before the trip'
+
 write_template "${DATA_DIR}/profiles/directives.md" \
 '# Directives
 
