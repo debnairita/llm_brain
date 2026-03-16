@@ -42,7 +42,8 @@ Data lives outside the repo at the paths configured in `config/config.yaml` (def
     ├── environment.md  # key locations and commute times between them
     ├── goals.md        # personal goals, what kind of work they need
     ├── tasks.md        # task-type durations and energy/context requirements
-    └── calendar.md     # public holidays, personal vacations, business travel, work blackout periods
+    ├── calendar.md     # public holidays, personal vacations, business travel, work blackout periods
+    └── reading_list.md # books and articles — read status, format, links
 ```
 
 ---
@@ -250,6 +251,28 @@ Three sections:
 | Event scheduled during a vacation | Flag: "You'll be away — is this intentional (e.g. a travel activity)?" |
 | Event scheduled during a blackout period | Flag the conflict before saving |
 | Upcoming vacation within 7 days | Proactively note it during daily briefing and suggest pre-trip prep tasks |
+
+### `reading_list.md`
+Books and articles the user wants to read, is reading, or has read.
+
+**Read `reading_list.md` only when:**
+- The user asks about a specific book or article ("have I read X?", "what's on my reading list?")
+- The user asks for a reading suggestion or wants to know what to read next
+- The user wants to add, update, or remove a reading list entry
+
+**Do not load it during daily briefings or task/event scheduling.**
+
+Fields:
+- **Title** — book or article title
+- **Author / Source** — author name or publication
+- **Status** — `not-started` | `reading` | `paused` | `done`
+- **Format** — `physical` | `kindle` | `audiobook` | `web` | `pdf`
+- **Notes** — optional: page/progress notes, episode, why it's on the list, recommendation source
+- **Link** — URL for articles/web content; omit for physical books
+
+Books and audiobooks share one table. Articles & Papers share a second. When the user says they've finished something, set status to `done`. When they mention picking something back up, set to `in-progress`.
+
+---
 
 ### Profile file format
 
