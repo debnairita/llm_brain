@@ -103,6 +103,31 @@ python scripts/reindex.py
 
 ---
 
+## Before Adding Any Task or Event
+
+**Always run this checklist before adding or scheduling anything — even before asking clarifying questions.**
+
+### Step 1 — Check directives
+- Read `profiles/directives.md`
+- Apply any hard constraints or trade-off rules it defines (protected time blocks, priority overrides, communication requirements)
+- If the request conflicts with a directive, flag it before proceeding
+
+### Step 2 — Check the calendar (if a date is mentioned)
+- Read `profiles/calendar.md`
+- Check whether the target date falls on a vacation, business trip, blackout period, or public holiday
+- If a conflict exists, **flag it immediately** and suggest an alternative date
+
+### Step 3 — Check existing tasks and events (if a date is mentioned)
+- Scan `data/tasks.yaml` for tasks already due on or near that date — flag overload if the day looks heavy
+- Scan `data/events.yaml` for events already scheduled on that date — flag time conflicts
+
+### Step 4 — Ask clarifying questions
+- Only after steps 1–3 are clear, ask for missing details (time, location, duration, etc.)
+
+> Do not skip or reorder these steps. Surfacing conflicts early costs less than fixing a wrong entry.
+
+---
+
 ## Tasks — `data/tasks.yaml`
 
 ```yaml
