@@ -77,6 +77,7 @@ Use it to decide which specific files to open. Never scan blindly.
 | "find my notes about X" | index → matching journal dates |
 | "any ideas / thoughts about X" | index → journal entries tagged `ideas`; user may journal ideas multiple times a day |
 | "tasks / todos about X" | `tasks.yaml` directly (filter by `ttl_days` to distinguish todos from real tasks) |
+| "work tasks / personal tasks" | `tasks.yaml` directly, filter by `category` |
 | "meeting / appointment" | `events.yaml` directly |
 
 ---
@@ -137,6 +138,7 @@ tasks:
     description: ""
     status: pending        # pending | in_progress | done | cancelled
     priority: medium       # low | medium | high
+    category: personal     # work | personal
     due_date: "2026-03-15" # or null
     tags: []
     created_at: "2026-03-13"
@@ -144,9 +146,10 @@ tasks:
     completed_at: null     # set to today's date when marking done (required for ttl_days to work)
 ```
 
-- **Add**: append a new entry; `id` = max existing id + 1.
+- **Add**: append a new entry; `id` = max existing id + 1. Always set `category`.
 - **Complete**: set `status: done` and `completed_at: YYYY-MM-DD` (today).
-- **Daily plan**: list `pending` and `in_progress` sorted by `priority` (high→low) then `due_date`.
+- **Daily plan**: list `pending` and `in_progress` grouped by `category` (Work first, then Personal), sorted within each group by `priority` (high→low) then `due_date`.
+- **Filtering**: when the user asks for "work tasks" or "personal tasks", filter by `category`.
 
 ### Ephemeral todos (`ttl_days`)
 
@@ -516,7 +519,7 @@ If a relevant profile field is missing (e.g. no commute time listed for a locati
 ## Daily Briefing
 
 When asked for a briefing / "what's on today":
-1. `data/tasks.yaml` → pending/in_progress tasks by priority
+1. `data/tasks.yaml` → pending/in_progress tasks grouped by category (Work / Personal), sorted by priority within each group
 2. `data/events.yaml` → today's events + next 3 days
 3. `data/index.yaml` → check if today's journal file exists; if so, open it for any morning notes
 4. `profiles/calendar.md` → note if today or the next 3 days include a public holiday or vacation; flag upcoming vacations within 7 days

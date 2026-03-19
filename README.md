@@ -6,12 +6,12 @@ A plain-file personal assistant powered by Claude Code. Manages tasks, calendar 
 
 ## What it does
 
-- **Tasks** — add, update, and prioritise to-dos; ephemeral todos auto-purge after completion
+- **Tasks** — add, update, and prioritise to-dos; categorised as `work` or `personal`; ephemeral todos auto-purge after completion
 - **Events** — track calendar events with automatic commute and schedule enrichment
 - **Journal** — one Markdown file per day; tag entries for fast lookup
 - **Profiles** — personal context (identity, family, locations, goals, calendar, reading list, checklists) that Claude reads when scheduling or suggesting activities
 - **Search** — hierarchical lookup via an index file so Claude never scans blindly
-- **Daily briefing** — ask "what's on today?" for a prioritised summary of tasks, events, and morning notes
+- **Daily briefing** — ask "what's on today?" for a prioritised summary of tasks (grouped by Work / Personal), events, and morning notes
 - **Free-time matching** — tell Claude how much time you have and your energy level; it suggests goal-aligned activities
 
 ---
@@ -82,7 +82,7 @@ Data lives outside the repo at the path configured in `config/config.yaml`. Defa
 ```
 ~/Documents/llm_brain/
 ├── index.yaml          # search index — auto-maintained
-├── tasks.yaml          # all tasks
+├── tasks.yaml          # all tasks (work and personal)
 ├── events.yaml         # calendar events
 ├── journal/            # YYYY-MM-DD.md per day
 └── profiles/
@@ -92,13 +92,34 @@ Data lives outside the repo at the path configured in `config/config.yaml`. Defa
     ├── friends.md      # friends context
     ├── environment.md  # key locations and commute times
     ├── goals.md        # personal goals and progress
-    ├── tasks.md        # task-type durations and energy requirements
-    ├── calendar.md     # public holidays, vacations, blackout periods
-    ├── reading_list.md # books and articles
+    ├── tasks.md        # task-type durations, energy requirements, and category
+    ├── calendar.md     # public holidays, vacations, business travel, blackout periods
+    ├── reading_list.md # books and articles — read status, format, links
     └── checklists.md   # reusable travel and prep checklists
 ```
 
 This directory is its own git repo (created by `init.sh`). Changes are tracked locally; push to a remote of your choice for backup.
+
+---
+
+## Task schema
+
+```yaml
+- id: 1
+  title: "Example task"
+  description: ""
+  status: pending          # pending | in_progress | done | cancelled
+  priority: medium         # low | medium | high
+  category: personal       # work | personal
+  due_date: "2026-03-15"   # or null
+  tags: []
+  created_at: "2026-03-13"
+  ttl_days: 14             # null for permanent tasks; integer for ephemeral todos
+  completed_at: null
+```
+
+- **`category`** separates work tasks from personal ones. Daily briefings group tasks by category (Work first, then Personal).
+- **`ttl_days`** marks short-lived chores. Completed ephemeral tasks are auto-purged by `purge_todos.py` and summarised in the journal.
 
 ---
 
@@ -119,8 +140,9 @@ This directory is its own git repo (created by `init.sh`). Changes are tracked l
 Just talk to Claude Code naturally:
 
 ```
-Add a high-priority task to review the Q1 report by Friday.
+Add a high-priority work task to finish the Q1 report by Friday.
 What's on my plate today?
+Show me just my work tasks.
 Log a journal entry: finished the API refactor, blocked on auth review.
 I have 45 minutes free — what should I work on?
 Find everything I have about the Berlin trip.
