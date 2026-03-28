@@ -21,6 +21,7 @@ import calendar
 import sys
 from datetime import date, timedelta
 from pathlib import Path
+from typing import Optional
 
 import yaml
 
@@ -45,7 +46,7 @@ def save_yaml(path: Path, data: dict) -> None:
     )
 
 
-def nth_weekday_of_month(year: int, month: int, n: int, weekday: int) -> date | None:
+def nth_weekday_of_month(year: int, month: int, n: int, weekday: int) -> Optional[date]:
     """Return the date of the nth occurrence of weekday in the given month.
     Returns None if the month has fewer than n occurrences of that weekday."""
     count = 0
@@ -58,7 +59,7 @@ def nth_weekday_of_month(year: int, month: int, n: int, weekday: int) -> date | 
     return None
 
 
-def next_occurrence(recurrence: dict, on_or_after: date) -> date | None:
+def next_occurrence(recurrence: dict, on_or_after: date) -> Optional[date]:
     """Return the next occurrence date on or after `on_or_after`."""
     rtype = recurrence.get("type")
 
@@ -90,7 +91,7 @@ def max_task_id(tasks: list[dict]) -> int:
     return max((t.get("id", 0) for t in tasks), default=0)
 
 
-def find_actionable_occurrence(recurrence: dict, last_generated: date | None, today: date) -> date | None:
+def find_actionable_occurrence(recurrence: dict, last_generated: Optional[date], today: date) -> Optional[date]:
     """Find the next occurrence that is either upcoming (within advance window)
     or missed but not stale (within 7 days past due). Skips stale occurrences."""
     STALE_DAYS = 7
