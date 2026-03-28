@@ -6,7 +6,7 @@ A plain-file personal assistant powered by Claude Code. Manages tasks, calendar 
 
 ## What it does
 
-- **Tasks** — add, update, and prioritise to-dos; categorised as `work` or `personal`; ephemeral todos auto-purge after completion
+- **Tasks** — add, update, and prioritise to-dos; categorised as `work` or `personal`; ephemeral todos auto-purge after completion; recurring tasks auto-generated from templates
 - **Events** — track calendar events with automatic commute and schedule enrichment
 - **Journal** — one Markdown file per day; tag entries for fast lookup
 - **Profiles** — personal context (identity, family, locations, goals, calendar, reading list, checklists) that Claude reads when scheduling or suggesting activities
@@ -45,6 +45,7 @@ storage:
   events: "/path/to/your/data/events.yaml"
   journal_dir: "/path/to/your/data/journal"
   profiles_dir: "/path/to/your/data/profiles"
+  recurring_tasks: "/path/to/your/data/recurring_tasks.yaml"
 ```
 
 Fill in the profile files in `~/Documents/llm_brain/profiles/` before your first session — they tell Claude who you are, your schedule, family, locations, and goals.
@@ -67,7 +68,7 @@ Run the startup script before each session:
 bash scripts/startup.sh
 ```
 
-This pulls the latest project code from GitHub, syncs your data with the remote (if configured), rebuilds the index, and purges expired todos. Then open the project in Claude Code:
+This pulls the latest project code from GitHub, syncs your data with the remote (if configured), rebuilds the index, purges expired todos, and generates any recurring tasks that are due. Then open the project in Claude Code:
 
 ```bash
 claude
@@ -81,10 +82,11 @@ Data lives outside the repo at the path configured in `config/config.yaml`. Defa
 
 ```
 ~/Documents/llm_brain/
-├── index.yaml          # search index — auto-maintained
-├── tasks.yaml          # all tasks (work and personal)
-├── events.yaml         # calendar events
-├── journal/            # YYYY-MM-DD.md per day
+├── index.yaml               # search index — auto-maintained
+├── tasks.yaml               # all tasks (work and personal)
+├── events.yaml              # calendar events
+├── recurring_tasks.yaml     # recurring task templates (auto-generates tasks on startup)
+├── journal/                 # YYYY-MM-DD.md per day
 └── profiles/
     ├── directives.md   # guiding principles — read first for scheduling
     ├── individual.md   # identity, work, schedule, preferences
@@ -123,14 +125,46 @@ This directory is its own git repo (created by `init.sh`). Changes are tracked l
 
 ---
 
+## Recurring tasks
+
+For tasks that repeat on a schedule too complex for simple recurrence (e.g. "2nd Saturday of every month"), add a template to `recurring_tasks.yaml`:
+
+```yaml
+recurring_tasks:
+  - id: rt1
+    title: Charge drone battery
+    description: Charge drone battery. Takes ~10 min.
+    priority: low
+    category: personal
+    tags: [errands, drone]
+    ttl_days: 7
+    recurrence:
+      type: monthly_nth_weekday
+      n: 2        # 2nd occurrence
+      weekday: 5  # 0=Monday ... 6=Sunday
+    advance_days: 0   # generate task N days before due (0 = on the day)
+    last_generated: null
+```
+
+`startup.sh` calls `generate_recurring_tasks.py` which creates a one-off entry in `tasks.yaml` when the occurrence is due. Generation is idempotent. Occurrences missed by ≤7 days are still generated on the next startup; older ones are skipped.
+
+**Supported recurrence types:**
+
+| Type | Fields | Example |
+|------|--------|---------|
+| `monthly_nth_weekday` | `n`, `weekday` | 2nd Saturday = `n: 2, weekday: 5` |
+
+---
+
 ## Scripts
 
 | Script | Purpose |
 |---|---|
 | `scripts/init.sh` | One-time setup: create data directory, template profiles, and blank data files |
-| `scripts/startup.sh` | Pull latest code, sync data remote (if configured), rebuild index, purge expired todos — run before each session |
+| `scripts/startup.sh` | Pull latest code, sync data remote (if configured), rebuild index, purge expired todos, generate recurring tasks — run before each session |
 | `scripts/reindex.py` | Rebuild `index.yaml` from scratch — called by `startup.sh`, or run manually after bulk file changes |
 | `scripts/purge_todos.py` | Remove completed ephemeral tasks past their TTL; append a summary to the journal |
+| `scripts/generate_recurring_tasks.py` | Generate due tasks from `recurring_tasks.yaml` templates; idempotent |
 | `scripts/sync_check.sh` | Check whether the data directory is in sync with its remote; exits non-zero if behind or diverged |
 
 ---

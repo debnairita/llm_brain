@@ -3,3 +3,4 @@ storage:
   events: "~/Documents/llm_brain/events.yaml"
   journal_dir: "~/Documents/llm_brain/journal"
   profiles_dir: "~/Documents/llm_brain/profiles"
+  recurring_tasks: "~/Documents/llm_brain/recurring_tasks.yaml"

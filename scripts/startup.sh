@@ -148,3 +148,7 @@ echo "==> Rebuilding index..."
 echo ""
 echo "==> Purging completed todos..."
 "${PYTHON}" "${REPO_ROOT}/scripts/purge_todos.py"
+
+echo ""
+echo "==> Generating recurring tasks..."
+"${PYTHON}" "${REPO_ROOT}/scripts/generate_recurring_tasks.py"

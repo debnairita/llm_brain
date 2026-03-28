@@ -30,11 +30,12 @@ Data lives outside the repo at the paths configured in `config/config.yaml` (def
 
 ```
 ~/Documents/llm_brain/
-├── index.yaml          # search index — always read this first
-├── tasks.yaml          # all tasks
-├── events.yaml         # calendar events
-├── journal/            # one markdown file per day: YYYY-MM-DD.md
-└── profiles/           # personal context — read when adding tasks/events
+├── index.yaml               # search index — always read this first
+├── tasks.yaml               # all tasks
+├── events.yaml              # calendar events
+├── recurring_tasks.yaml     # recurring task templates (see below)
+├── journal/                 # one markdown file per day: YYYY-MM-DD.md
+└── profiles/                # personal context — read when adding tasks/events
     ├── directives.md   # guiding principles — read this FIRST for any scheduling or suggestion
     ├── individual.md   # the user's identity, work, schedule, preferences
     ├── family.md       # family members, their schools/workplaces, schedules
@@ -126,6 +127,42 @@ python scripts/reindex.py
 - Only after steps 1–3 are clear, ask for missing details (time, location, duration, etc.)
 
 > Do not skip or reorder these steps. Surfacing conflicts early costs less than fixing a wrong entry.
+
+---
+
+## Recurring Tasks — `data/recurring_tasks.yaml`
+
+Templates for tasks that repeat on a schedule too complex for `events.yaml` (e.g. "2nd Saturday of every month"). At startup, `scripts/generate_recurring_tasks.py` reads this file and creates one-off entries in `tasks.yaml` when an occurrence is due.
+
+**Schema:**
+```yaml
+recurring_tasks:
+  - id: rt1
+    title: "Charge drone battery"
+    description: "Optional detail."
+    priority: low           # low | medium | high
+    category: personal      # work | personal
+    tags: [errands, drone]
+    ttl_days: 7             # auto-expire if not done within N days
+    recurrence:
+      type: monthly_nth_weekday
+      n: 2                  # 2nd occurrence
+      weekday: 5            # 0=Monday ... 6=Sunday
+    advance_days: 0         # generate task N days before due date (0 = on the day)
+    last_generated: null    # updated automatically by the script
+```
+
+**Supported recurrence types:**
+
+| Type | Fields | Example |
+|------|--------|---------|
+| `monthly_nth_weekday` | `n`, `weekday` | 2nd Saturday = `n: 2, weekday: 5` |
+
+**Rules:**
+- Occurrences missed by ≤7 days are still generated on the next startup.
+- Occurrences missed by >7 days are skipped silently.
+- Generation is idempotent — running startup twice won't create duplicates.
+- To add a new recurring reminder, append an entry to `recurring_tasks.yaml`.
 
 ---
 
