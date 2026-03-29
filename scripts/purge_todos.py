@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Purge ephemeral completed tasks from tasks.yaml.
+Purge ephemeral tasks from tasks.yaml.
 
-Ephemeral tasks have a `ttl_days` field set (integer). When a task with
-`ttl_days` set has status `done` and its `completed_at` date is older than
-`ttl_days` days, it is:
-  1. Summarised into the journal entry for its completion date.
-  2. Removed from tasks.yaml.
+Ephemeral tasks have a `ttl_days` field set (integer).
 
-Incomplete ephemeral tasks older than `ttl_days` are flagged with a warning
-but NOT deleted — they may still need doing.
+- done: purged when completed_at + ttl_days <= today.
+  Summarised into the journal entry for their completion date.
+- cancelled: purged when created_at + ttl_days <= today (no completed_at needed).
+  Silently removed — no journal entry.
+- pending/in_progress: flagged with a warning but NOT deleted — they may
+  still need doing.
 
 Usage:
     python scripts/purge_todos.py
@@ -87,17 +87,24 @@ def main() -> None:
             continue
 
         status = task.get("status", "pending")
+        created_at_raw = task.get("created_at")
+
         if status == "done":
             completed_at_raw = task.get("completed_at")
             if completed_at_raw:
                 completed_at = date.fromisoformat(str(completed_at_raw))
-                cutoff = completed_at + timedelta(days=int(ttl))
-                if today >= cutoff:
+                if today >= completed_at + timedelta(days=int(ttl)):
+                    to_purge.append(task)
+                    continue
+        elif status == "cancelled":
+            # Use created_at as the reference date since cancelled tasks have no completed_at
+            if created_at_raw:
+                created_at = date.fromisoformat(str(created_at_raw))
+                if today >= created_at + timedelta(days=int(ttl)):
                     to_purge.append(task)
                     continue
         else:
             # Pending/in_progress ephemeral task — warn if stale
-            created_at_raw = task.get("created_at")
             if created_at_raw:
                 created_at = date.fromisoformat(str(created_at_raw))
                 if today >= created_at + timedelta(days=int(ttl)):
@@ -111,18 +118,27 @@ def main() -> None:
             print(f"  - [{t['id']}] {t['title']} (created {t.get('created_at', '?')}, ttl {t.get('ttl_days')}d)")
 
     if not to_purge:
-        print("No completed todos to purge.")
+        print("No todos to purge.")
         return
 
-    # Group by completion date for journal entries
-    by_date: dict[date, list[str]] = defaultdict(list)
-    for t in to_purge:
-        d = date.fromisoformat(str(t["completed_at"]))
-        by_date[d].append(t["title"])
+    # Only done tasks get a journal entry; cancelled are removed silently
+    done_tasks = [t for t in to_purge if t.get("status") == "done"]
+    cancelled_tasks = [t for t in to_purge if t.get("status") == "cancelled"]
 
-    print(f"Purging {len(to_purge)} completed todo(s)...")
-    for entry_date in sorted(by_date):
-        append_to_journal(entry_date, by_date[entry_date])
+    if done_tasks:
+        by_date: dict[date, list[str]] = defaultdict(list)
+        for t in done_tasks:
+            d = date.fromisoformat(str(t["completed_at"]))
+            by_date[d].append(t["title"])
+
+        print(f"Purging {len(done_tasks)} completed todo(s)...")
+        for entry_date in sorted(by_date):
+            append_to_journal(entry_date, by_date[entry_date])
+
+    if cancelled_tasks:
+        print(f"Purging {len(cancelled_tasks)} cancelled todo(s) (no journal entry):")
+        for t in cancelled_tasks:
+            print(f"  - [{t['id']}] {t['title']}")
 
     save_tasks(to_keep)
     print(f"Done. {len(to_keep)} task(s) remain.")
