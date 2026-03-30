@@ -20,7 +20,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
+SCOPES = ["https://www.googleapis.com/auth/calendar"]
 CONFIG_PATH = Path(__file__).parent.parent / "config" / "config.yaml"
 
 
@@ -255,13 +255,64 @@ def transform(gcal_event: dict, calendar_label: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Create
+# ---------------------------------------------------------------------------
+
+def calendar_id_for_label(calendars_cfg: list, label: str) -> str:
+    for cal in calendars_cfg:
+        if cal["label"] == label:
+            return cal["id"]
+    raise ValueError(f"No calendar configured with label '{label}'. Available: {[c['label'] for c in calendars_cfg]}")
+
+
+def create_event(service, calendar_id: str, title: str, start: str, end: str,
+                 location: str = "", description: str = "") -> dict:
+    """
+    Create an event in Google Calendar.
+    start/end: 'YYYY-MM-DD HH:MM' (timed) or 'YYYY-MM-DD' (all-day).
+    Returns the created event resource.
+    """
+    def to_gcal_dt(s: str) -> dict:
+        if len(s) == 10:  # all-day
+            return {"date": s}
+        dt = datetime.strptime(s, "%Y-%m-%d %H:%M").replace(tzinfo=IST)
+        return {"dateTime": dt.isoformat(), "timeZone": "Asia/Kolkata"}
+
+    body = {
+        "summary": title,
+        "location": location,
+        "description": description,
+        "start": to_gcal_dt(start),
+        "end": to_gcal_dt(end),
+    }
+
+    return service.events().insert(calendarId=calendar_id, body=body).execute()
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true", help="Fetch and print only, no writes")
+
+    # --add mode
+    parser.add_argument("--add", action="store_true", help="Add a new event to Google Calendar")
+    parser.add_argument("--title", help="Event title")
+    parser.add_argument("--start", help="Start: 'YYYY-MM-DD HH:MM' or 'YYYY-MM-DD' for all-day")
+    parser.add_argument("--end", help="End: 'YYYY-MM-DD HH:MM' or 'YYYY-MM-DD' for all-day")
+    parser.add_argument("--calendar", choices=["personal", "family"], default="personal",
+                        help="Target calendar (default: personal)")
+    parser.add_argument("--location", default="", help="Location (optional)")
+    parser.add_argument("--description", default="", help="Description (optional)")
+
     args = parser.parse_args()
+
+    if args.add:
+        missing = [f for f in ("title", "start", "end") if not getattr(args, f)]
+        if missing:
+            parser.error(f"--add requires: {', '.join('--' + f for f in missing)}")
 
     cfg = load_config()
     gcal_cfg = cfg["gcal"]
@@ -278,6 +329,22 @@ def main():
     creds = get_credentials(creds_path, token_path)
     service = build("calendar", "v3", credentials=creds)
     print("Authenticated.\n")
+
+    if args.add:
+        cal_id = calendar_id_for_label(calendars, args.calendar)
+        created = create_event(
+            service, cal_id,
+            title=args.title,
+            start=args.start,
+            end=args.end,
+            location=args.location,
+            description=args.description,
+        )
+        print(f"Created: [{args.calendar}] {args.start}  {args.title}")
+        print(f"GCal ID: {created['id']}")
+        print(f"Link:    {created.get('htmlLink', '')}")
+        print("\nSyncing into events.yaml...")
+        # fall through to sync so the new event lands in events.yaml immediately
 
     all_events = []
 
