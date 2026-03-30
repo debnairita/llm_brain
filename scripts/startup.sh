@@ -152,3 +152,17 @@ echo "==> Purging completed todos..."
 echo ""
 echo "==> Generating recurring tasks..."
 "${PYTHON}" "${REPO_ROOT}/scripts/generate_recurring_tasks.py"
+
+echo ""
+echo "==> Syncing Google Calendar..."
+GCAL_TOKEN="${LLM_BRAIN_DIR}/google_token.json"
+GCAL_CREDS="${LLM_BRAIN_DIR}/credentials.json"
+if [ ! -f "${GCAL_CREDS}" ]; then
+  echo "INFO: credentials.json not found — skipping Google Calendar sync."
+  echo "      See README for setup instructions."
+elif [ ! -f "${GCAL_TOKEN}" ]; then
+  echo "INFO: google_token.json not found — run sync_gcal.py once manually to authorize."
+  echo "      .venv/bin/python scripts/sync_gcal.py"
+else
+  "${PYTHON}" "${REPO_ROOT}/scripts/sync_gcal.py" 2>&1 | grep -v FutureWarning | grep -v "warnings.warn" | grep -v "end of life" | grep -v "update google" | grep -v "NotOpenSSLWarning" | grep -v "OpenSSL" | grep -v "urllib3" | grep -v "python_version"
+fi
