@@ -4,3 +4,13 @@ storage:
   journal_dir: "~/Documents/llm_brain/journal"
   profiles_dir: "~/Documents/llm_brain/profiles"
   recurring_tasks: "~/Documents/llm_brain/recurring_tasks.yaml"
+
+gcal:
+  credentials: "~/Documents/llm_brain/credentials.json"
+  token: "~/Documents/llm_brain/google_token.json"
+  calendars:
+    - id: "primary"
+      label: "personal"
+    - id: "family02640095446784233370@group.calendar.google.com"
+      label: "family"
+  sync_days_ahead: 60
