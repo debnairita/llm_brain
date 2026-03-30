@@ -25,6 +25,9 @@ ENV/
 # Secrets
 secrets.yaml
 *.secret
+credentials.json
+google_token.json
+token.json
 
 # IDE
 .idea/

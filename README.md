@@ -7,7 +7,7 @@ A plain-file personal assistant powered by Claude Code. Manages tasks, calendar 
 ## What it does
 
 - **Tasks** — add, update, and prioritise to-dos; categorised as `work` or `personal`; ephemeral todos auto-purge after completion; recurring tasks auto-generated from templates
-- **Events** — track calendar events with automatic commute and schedule enrichment
+- **Events** — track calendar events with automatic commute and schedule enrichment; sync from Google Calendar
 - **Journal** — one Markdown file per day; tag entries for fast lookup
 - **Profiles** — personal context (identity, family, locations, goals, calendar, reading list, checklists) that Claude reads when scheduling or suggesting activities
 - **Search** — hierarchical lookup via an index file so Claude never scans blindly
@@ -48,6 +48,42 @@ storage:
   recurring_tasks: "/path/to/your/data/recurring_tasks.yaml"
 ```
 
+**Optional: Google Calendar sync**
+
+To pull events from Google Calendar into `events.yaml`, set up OAuth credentials (see below) and configure `config/config.yaml`:
+
+```yaml
+gcal:
+  credentials: "~/Documents/llm_brain/credentials.json"
+  token: "~/Documents/llm_brain/google_token.json"
+  calendars:
+    - id: "primary"
+      label: "personal"
+    - id: "<your-family-calendar-id>"
+      label: "family"
+  sync_days_ahead: 60
+```
+
+**Getting OAuth credentials:**
+1. Go to [Google Cloud Console](https://console.cloud.google.com/) → create a project
+2. Enable the **Google Calendar API**
+3. Create an OAuth 2.0 credential (type: Desktop app) → download as `credentials.json`
+4. Place `credentials.json` at the path set in `config.yaml` (default: `~/Documents/llm_brain/credentials.json`)
+5. Add your Google account as a **test user** under APIs & Services → OAuth consent screen → Test users
+6. Run `sync_gcal.py` once to complete the browser OAuth flow — a `google_token.json` is saved and reused on future runs
+
+To find your family (or other) calendar IDs, run:
+```bash
+.venv/bin/python -c "
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+creds = Credentials.from_authorized_user_file('~/Documents/llm_brain/google_token.json', ['https://www.googleapis.com/auth/calendar.readonly'])
+service = build('calendar', 'v3', credentials=creds)
+for c in service.calendarList().list().execute()['items']:
+    print(c['id'], c['summary'])
+"
+```
+
 Fill in the profile files in `~/Documents/llm_brain/profiles/` before your first session — they tell Claude who you are, your schedule, family, locations, and goals.
 
 **Optional: back up your data to a remote**
@@ -84,8 +120,10 @@ Data lives outside the repo at the path configured in `config/config.yaml`. Defa
 ~/Documents/llm_brain/
 ├── index.yaml               # search index — auto-maintained
 ├── tasks.yaml               # all tasks (work and personal)
-├── events.yaml              # calendar events
+├── events.yaml              # calendar events (also populated by gcal sync)
 ├── recurring_tasks.yaml     # recurring task templates (auto-generates tasks on startup)
+├── credentials.json         # Google OAuth client secret (not committed)
+├── google_token.json        # Google OAuth token — auto-created on first sync (not committed)
 ├── journal/                 # YYYY-MM-DD.md per day
 └── profiles/
     ├── directives.md   # guiding principles — read first for scheduling
@@ -166,6 +204,7 @@ recurring_tasks:
 | `scripts/purge_todos.py` | Remove completed ephemeral tasks past their TTL; append a summary to the journal |
 | `scripts/generate_recurring_tasks.py` | Generate due tasks from `recurring_tasks.yaml` templates; idempotent |
 | `scripts/sync_check.sh` | Check whether the data directory is in sync with its remote; exits non-zero if behind or diverged |
+| `scripts/sync_gcal.py` | Sync Google Calendar events into `events.yaml` — adds new, updates changed, removes deleted (within sync window); run with `--dry-run` to preview |
 
 ---
 
@@ -181,6 +220,7 @@ Log a journal entry: finished the API refactor, blocked on auth review.
 I have 45 minutes free — what should I work on?
 Find everything I have about the Berlin trip.
 What's on my reading list?
+/sync
 ```
 
 ---
@@ -190,3 +230,4 @@ What's on my reading list?
 - [Claude Code](https://claude.ai/code)
 - Python 3.10+
 - `PyYAML` — installed automatically by `startup.sh` via `requirements.txt`
+- `google-auth`, `google-auth-oauthlib`, `google-api-python-client` — required for Google Calendar sync; installed via `requirements.txt`
