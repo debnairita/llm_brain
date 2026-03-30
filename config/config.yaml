@@ -11,6 +11,6 @@ gcal:
   calendars:
     - id: "primary"
       label: "personal"
-    - id: "family"
+    - id: "family02640095446784233370@group.calendar.google.com"
       label: "family"
   sync_days_ahead: 60
