@@ -255,6 +255,14 @@ def transform(gcal_event: dict, calendar_label: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Delete
+# ---------------------------------------------------------------------------
+
+def delete_event(service, calendar_id: str, event_id: str) -> None:
+    service.events().delete(calendarId=calendar_id, eventId=event_id).execute()
+
+
+# ---------------------------------------------------------------------------
 # Create
 # ---------------------------------------------------------------------------
 
@@ -307,12 +315,19 @@ def main():
     parser.add_argument("--location", default="", help="Location (optional)")
     parser.add_argument("--description", default="", help="Description (optional)")
 
+    # --delete mode
+    parser.add_argument("--delete", action="store_true", help="Delete an event from Google Calendar")
+    parser.add_argument("--event-id", help="GCal event ID (external_id) to delete")
+
     args = parser.parse_args()
 
     if args.add:
         missing = [f for f in ("title", "start", "end") if not getattr(args, f)]
         if missing:
             parser.error(f"--add requires: {', '.join('--' + f for f in missing)}")
+
+    if args.delete and not args.event_id:
+        parser.error("--delete requires --event-id")
 
     cfg = load_config()
     gcal_cfg = cfg["gcal"]
@@ -329,6 +344,13 @@ def main():
     creds = get_credentials(creds_path, token_path)
     service = build("calendar", "v3", credentials=creds)
     print("Authenticated.\n")
+
+    if args.delete:
+        cal_id = calendar_id_for_label(calendars, args.calendar)
+        delete_event(service, cal_id, args.event_id)
+        print(f"Deleted GCal event: {args.event_id}")
+        print("\nSyncing into events.yaml...")
+        # fall through to sync so the deletion is reflected in events.yaml
 
     if args.add:
         cal_id = calendar_id_for_label(calendars, args.calendar)
