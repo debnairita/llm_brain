@@ -5,6 +5,9 @@ storage:
   profiles_dir: "~/Documents/llm_brain/profiles"
   recurring_tasks: "~/Documents/llm_brain/recurring_tasks.yaml"
 
+telegram:
+  config_file: "~/Documents/llm_brain/telegram.json"
+
 gcal:
   credentials: "~/Documents/llm_brain/credentials.json"
   token: "~/Documents/llm_brain/google_token.json"

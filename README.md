@@ -13,6 +13,7 @@ A plain-file personal assistant powered by Claude Code. Manages tasks, calendar 
 - **Search** — hierarchical lookup via an index file so Claude never scans blindly
 - **Daily briefing** — ask "what's on today?" for a prioritised summary of tasks (grouped by Work / Personal), events, and morning notes
 - **Free-time matching** — tell Claude how much time you have and your energy level; it suggests goal-aligned activities
+- **Telegram bot** — send messages to a Telegram bot and get Claude Code responses back; all messages are relayed directly to `claude -p`
 
 ---
 
@@ -86,6 +87,42 @@ for c in service.calendarList().list().execute()['items']:
 
 Fill in the profile files in `~/Documents/llm_brain/profiles/` before your first session — they tell Claude who you are, your schedule, family, locations, and goals.
 
+**Optional: Telegram bot**
+
+To interact with llm_brain via Telegram:
+
+1. Create a bot via [@BotFather](https://t.me/botfather) and copy the token
+2. Create `~/Documents/llm_brain/telegram.json`:
+   ```json
+   {
+     "token": "YOUR_BOT_TOKEN",
+     "chat_id": null
+   }
+   ```
+3. Run setup to register your chat ID:
+   ```bash
+   .venv/bin/python scripts/telegram_setup.py
+   ```
+   Then send any message to your bot on Telegram — the chat ID is saved automatically.
+4. Start the bot:
+   ```bash
+   .venv/bin/python scripts/telegram_bot.py
+   ```
+
+Every message you send to the bot is passed to `claude -p "<message>"` and the response is returned to Telegram. To send one-off notifications from other scripts, import `telegram_notify`:
+```python
+from scripts.telegram_notify import send
+send("Task due: Buy groceries")
+```
+Or from the CLI:
+```bash
+.venv/bin/python scripts/telegram_notify.py "Your message here"
+```
+
+`telegram.json` is gitignored and lives outside the repo — the token is never committed.
+
+---
+
 **Optional: back up your data to a remote**
 
 The data directory is a plain git repo. Point it at any remote you like:
@@ -124,6 +161,7 @@ Data lives outside the repo at the path configured in `config/config.yaml`. Defa
 ├── recurring_tasks.yaml     # recurring task templates (auto-generates tasks on startup)
 ├── credentials.json         # Google OAuth client secret (not committed)
 ├── google_token.json        # Google OAuth token — auto-created on first sync (not committed)
+├── telegram.json            # Telegram bot token and chat_id (not committed)
 ├── journal/                 # YYYY-MM-DD.md per day
 └── profiles/
     ├── directives.md   # guiding principles — read first for scheduling
@@ -205,6 +243,9 @@ recurring_tasks:
 | `scripts/generate_recurring_tasks.py` | Generate due tasks from `recurring_tasks.yaml` templates; idempotent |
 | `scripts/sync_check.sh` | Check whether the data directory is in sync with its remote; exits non-zero if behind or diverged |
 | `scripts/sync_gcal.py` | Sync Google Calendar events into `events.yaml` — adds new, updates changed, removes deleted (within sync window); run with `--dry-run` to preview |
+| `scripts/telegram_bot.py` | Long-polling Telegram bot — relays all incoming messages to `claude -p` and sends the response back |
+| `scripts/telegram_notify.py` | Send a one-off Telegram message from CLI or as an imported module |
+| `scripts/telegram_setup.py` | One-time setup: waits for you to message the bot and saves your `chat_id` to `telegram.json` |
 
 ---
 
@@ -231,3 +272,4 @@ What's on my reading list?
 - Python 3.10+
 - `PyYAML` — installed automatically by `startup.sh` via `requirements.txt`
 - `google-auth`, `google-auth-oauthlib`, `google-api-python-client` — required for Google Calendar sync; installed via `requirements.txt`
+- `requests` — required for Telegram bot; installed via `requirements.txt`
