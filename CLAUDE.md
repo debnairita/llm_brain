@@ -188,6 +188,26 @@ tasks:
 - **Daily plan**: list `pending` and `in_progress` grouped by `category` (Work first, then Personal), sorted within each group by `priority` (high→low) then `due_date`.
 - **Filtering**: when the user asks for "work tasks" or "personal tasks", filter by `category`.
 
+### Standard Grouping Tags
+
+Every task **must** include one or more of these standard tags in addition to any fine-grained tags:
+
+| Tag | When to apply |
+|-----|---------------|
+| `work` | Any work/professional task |
+| `personal` | Personal admin, finance, health, home — not family-specific or a hobby |
+| `family` | Involves or is primarily for a family member |
+| `errands` | Requires action/coordination (calls, bookings, purchases, visits) |
+| `hobby` | Tinkering, hardware, robotics, side projects, creative pursuits |
+| `study` | Learning, reading, courses, skill-building |
+| `health` | Medical appointments, fitness, wellness, health admin |
+
+Rules:
+- A task can have **multiple** standard tags (e.g. a family errand gets both `family` and `errands`).
+- `work` and `personal` are mutually exclusive; all other tags can combine freely.
+- **When filtering by tag** (e.g. "show me hobby tasks"), match against the `tags` list.
+- **When adding a task**, always assign at least one standard tag before writing.
+
 ### Ephemeral todos (`ttl_days`)
 
 Short-lived chores (pick up groceries, call electrician, etc.) should have `ttl_days: 14` set.
