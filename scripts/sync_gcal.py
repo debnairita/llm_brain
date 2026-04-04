@@ -274,10 +274,11 @@ def calendar_id_for_label(calendars_cfg: list, label: str) -> str:
 
 
 def create_event(service, calendar_id: str, title: str, start: str, end: str,
-                 location: str = "", description: str = "") -> dict:
+                 location: str = "", description: str = "", recurrence: str = "") -> dict:
     """
     Create an event in Google Calendar.
     start/end: 'YYYY-MM-DD HH:MM' (timed) or 'YYYY-MM-DD' (all-day).
+    recurrence: RRULE string e.g. 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'
     Returns the created event resource.
     """
     def to_gcal_dt(s: str) -> dict:
@@ -293,6 +294,9 @@ def create_event(service, calendar_id: str, title: str, start: str, end: str,
         "start": to_gcal_dt(start),
         "end": to_gcal_dt(end),
     }
+
+    if recurrence:
+        body["recurrence"] = [recurrence]
 
     return service.events().insert(calendarId=calendar_id, body=body).execute()
 
@@ -314,6 +318,7 @@ def main():
                         help="Target calendar (default: personal)")
     parser.add_argument("--location", default="", help="Location (optional)")
     parser.add_argument("--description", default="", help="Description (optional)")
+    parser.add_argument("--recurrence", default="", help="RRULE string e.g. 'RRULE:FREQ=MONTHLY;BYMONTHDAY=1'")
 
     # --delete mode
     parser.add_argument("--delete", action="store_true", help="Delete an event from Google Calendar")
@@ -361,6 +366,7 @@ def main():
             end=args.end,
             location=args.location,
             description=args.description,
+            recurrence=args.recurrence,
         )
         print(f"Created: [{args.calendar}] {args.start}  {args.title}")
         print(f"GCal ID: {created['id']}")
