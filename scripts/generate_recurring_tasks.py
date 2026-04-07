@@ -12,6 +12,8 @@ Recurrence types supported:
   monthly_nth_weekday:
     n:       nth occurrence (1 = first, 2 = second, ...)
     weekday: 0=Monday ... 6=Sunday
+  monthly_fixed_day:
+    day:     fixed day of the month (1–28)
 
 Usage:
     python scripts/generate_recurring_tasks.py
@@ -71,6 +73,21 @@ def next_occurrence(recurrence: dict, on_or_after: date) -> Optional[date]:
             occ = nth_weekday_of_month(year, month, n, weekday)
             if occ and occ >= on_or_after:
                 return occ
+            month += 1
+            if month > 12:
+                month = 1
+                year += 1
+
+    if rtype == "monthly_fixed_day":
+        day = recurrence["day"]
+        year, month = on_or_after.year, on_or_after.month
+        for _ in range(14):  # look ahead at most 14 months
+            try:
+                occ = date(year, month, day)
+                if occ >= on_or_after:
+                    return occ
+            except ValueError:
+                pass  # day out of range for this month — skip
             month += 1
             if month > 12:
                 month = 1
