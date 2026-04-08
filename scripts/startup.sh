@@ -154,6 +154,10 @@ echo "==> Generating recurring tasks..."
 "${PYTHON}" "${REPO_ROOT}/scripts/generate_recurring_tasks.py"
 
 echo ""
+echo "==> Generating recurring events..."
+"${PYTHON}" "${REPO_ROOT}/scripts/generate_recurring_events.py"
+
+echo ""
 echo "==> Syncing Google Calendar..."
 GCAL_TOKEN="${LLM_BRAIN_DIR}/google_token.json"
 GCAL_CREDS="${LLM_BRAIN_DIR}/credentials.json"

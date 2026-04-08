@@ -4,6 +4,7 @@ storage:
   journal_dir: "~/Documents/llm_brain/journal"
   profiles_dir: "~/Documents/llm_brain/profiles"
   recurring_tasks: "~/Documents/llm_brain/recurring_tasks.yaml"
+  recurring_events: "~/Documents/llm_brain/recurring_events.yaml"
 
 telegram:
   config_file: "~/Documents/llm_brain/telegram.json"
